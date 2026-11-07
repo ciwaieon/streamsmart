@@ -18,6 +18,7 @@ import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
 
 from .categorias import normalizar_generos
@@ -298,6 +299,18 @@ def uso_hoje(con):
     return uso.get("contagem", 0) if uso.get("dia") == date.today().isoformat() else 0
 
 
+def _enriquecer(r, cliente_tmdb):
+    """Busca no TMDB o título, a sinopse e a classificação em português (opcional)."""
+    if not cliente_tmdb or not r["tmdb_id"]:
+        return None
+    try:
+        from .tmdb import converter as converter_tmdb
+        det = cliente_tmdb.detalhes(r["tmdb_tipo"], r["tmdb_id"])
+        return converter_tmdb(r["tmdb_tipo"], det, set()) if det else None
+    except Exception:   # o complemento em português é opcional
+        return None
+
+
 def importar(con, cliente, limite_diario=95, cliente_tmdb=None, progresso=None):
     """Importa páginas dos catálogos até gastar a cota do dia, em rodízio entre os streamings.
 
@@ -339,19 +352,11 @@ def importar(con, cliente, limite_diario=95, cliente_tmdb=None, progresso=None):
             except CotaEsgotada:
                 cota_esgotada = True
                 break
-            for show in pagina.get("shows", []):
-                r = converter(show, mapa)
-                if not r["plataformas"]:
-                    continue
-                enriquecimento = None
-                if cliente_tmdb and r["tmdb_id"]:
-                    try:
-                        from .tmdb import converter as converter_tmdb
-                        det = cliente_tmdb.detalhes(r["tmdb_tipo"], r["tmdb_id"])
-                        if det:
-                            enriquecimento = converter_tmdb(r["tmdb_tipo"], det, set())
-                    except Exception:   # o complemento em português é opcional
-                        enriquecimento = None
+            registros = [r for r in (converter(show, mapa) for show in pagina.get("shows", [])) if r["plataformas"]]
+            # complemento em português (TMDB) buscado em paralelo, para não atrasar a importação
+            with ThreadPoolExecutor(max_workers=8) as pool:
+                enriquecimentos = list(pool.map(lambda r: _enriquecer(r, cliente_tmdb), registros))
+            for r, enriquecimento in zip(registros, enriquecimentos):
                 _, foi_novo = gravar(con, r, enriquecimento)
                 novos += foi_novo
                 atualizados += not foi_novo

@@ -148,26 +148,35 @@ def executar(caminho_db=None, forcar=False, fases=FASES, cliente=None, cliente_s
     _rodando.set()
     con = database.conectar(caminho_db)
     try:
-        # 1) fonte principal
-        executar_streaming(con, cliente=cliente_streaming, cliente_tmdb=cliente)
-        # 2) complemento do TMDB
         chave = obter_chave(con)
-        if not chave and cliente is None:
-            _gravar(con, "sem_chave", 0, "Chave do TMDB não configurada.")
-            return False
-        if not forcar and not precisa_atualizar(con):
-            _gravar(con, "pronto", 100, "Catálogo atualizado.")
-            return False
-        cliente = cliente or ClienteTMDB(chave)
-        for i, (nome, paginas) in enumerate(fases):
+        tmdb_ativo = bool(chave) or cliente is not None
+        precisa_tmdb = tmdb_ativo and (forcar or precisa_atualizar(con))
+        cliente_tmdb = (cliente or ClienteTMDB(chave)) if tmdb_ativo else None
+
+        def rodar_fase(i, nome, paginas):
             inicio, fim = i * 100 // len(fases), (i + 1) * 100 // len(fases)
 
-            def progresso(msg, pct, inicio=inicio, fim=fim, nome=nome):
+            def progresso(msg, pct):
                 if pct is not None:
                     _gravar(con, "importando", inicio + pct * (fim - inicio) // 100, f"Carga {nome}: {msg}")
 
-            importar_tmdb(con, cliente, paginas=paginas, progresso=progresso)
+            importar_tmdb(con, cliente_tmdb, paginas=paginas, progresso=progresso)
             repo.salvar_config(con, "tmdb_ultima_importacao", datetime.now().isoformat(timespec="seconds"))
+
+        # 1) carga rápida do TMDB primeiro: em 1 a 2 minutos o site já tem milhares de títulos com pôster
+        if precisa_tmdb:
+            rodar_fase(0, *fases[0])
+        # 2) fonte principal: catálogo oficial dos streamings (dublado/legendado), dentro da cota do dia
+        executar_streaming(con, cliente=cliente_streaming, cliente_tmdb=cliente_tmdb)
+        # 3) restante do TMDB
+        if not tmdb_ativo:
+            _gravar(con, "sem_chave", 0, "Chave do TMDB não configurada.")
+            return False
+        if not precisa_tmdb:
+            _gravar(con, "pronto", 100, "Catálogo atualizado.")
+            return False
+        for i, (nome, paginas) in enumerate(fases[1:], start=1):
+            rodar_fase(i, nome, paginas)
         _gravar(con, "pronto", 100, "Catálogo atualizado.")
         return True
     except ErroTMDB as e:
