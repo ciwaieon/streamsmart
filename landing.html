@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block titulo %}Organize seus streamings{% endblock %}
+{% block main_classe %}landing{% endblock %}
+{% block conteudo %}
+<section class="hero">
+  <div class="hero-texto">
+    <p class="sobretitulo">Assista ao que importa, controle o que gasta.</p>
+    <h1>Organize seus streamings e descubra o filme certo.</h1>
+    <p class="hero-sub">O StreamSmart junta num só lugar quanto você paga em cada plataforma e o que vale a pena
+      assistir agora, de acordo com o seu tempo e o seu humor, no streaming que você já assina.</p>
+    <div class="hero-acoes">
+      <a class="botao" href="{{ url_for('cadastro') }}">Começar grátis</a>
+      <a class="botao botao-fantasma" href="{{ url_for('login') }}">Ver a demonstração</a>
+    </div>
+    <p class="dica">Demonstração: <code>demo@streamsmart.com</code> · senha <code>demo123</code></p>
+  </div>
+
+  <div class="hero-mockup" aria-hidden="true">
+    <div class="mock-card">
+      <span class="mock-rotulo">Gasto do mês</span>
+      <strong class="mock-valor">R$ 135,60</strong>
+      <span class="mock-detalhe">Projeção anual: R$ 1.627,20</span>
+      <div class="mock-barras">
+        <span style="width:35%;background:#E50914"></span><span style="width:30%;background:#113CCF"></span>
+        <span style="width:20%;background:#7B2FF7"></span><span style="width:15%;background:#00A8E1"></span>
+      </div>
+    </div>
+    <div class="mock-card mock-alerta">
+      <span class="tag tag-alerta">Renovação em 2 dias!</span>
+      <span class="tag tag-ruim">Sem uso há 2 meses</span>
+    </div>
+    <div class="mock-card">
+      <span class="mock-rotulo">Qual é a vibe de hoje?</span>
+      <div class="mock-chips">
+        {% for chave, rotulo in vibes.items() %}<span class="chip {{ 'chip-ativo' if loop.first }}">{{ rotulo }}</span>{% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="recursos">
+  <article>
+    <h3>💰 Controle de gastos</h3>
+    <p>Total do mês, projeção anual e alertas antes de cada renovação ou do fim de um teste grátis.</p>
+  </article>
+  <article>
+    <h3>🎬 Recomendação por vibe</h3>
+    <p>Diga quanto tempo você tem, seu humor e com quem vai assistir. A gente filtra o catálogo para você.</p>
+  </article>
+  <article>
+    <h3>📊 Custo-benefício</h3>
+    <p>Descubra quanto custa cada hora assistida e quais assinaturas valem uma pausa.</p>
+  </article>
+</section>
+{% endblock %}

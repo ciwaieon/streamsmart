@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block titulo %}O que assistir hoje?{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina"><h1>O que assistir hoje?</h1></div>
+
+<form method="get" class="filtros-vibe" id="form-vibe">
+  <fieldset>
+    <legend>Tempo disponível</legend>
+    {% for chave, t in tempos.items() %}
+    <label class="chip-radio"><input type="radio" name="tempo" value="{{ chave }}" {{ 'checked' if filtros.tempo == chave }}><span>{{ t.rotulo }}</span></label>
+    {% endfor %}
+  </fieldset>
+  <fieldset>
+    <legend>Vibe / humor</legend>
+    {% for chave, rotulo in vibes.items() %}
+    <label class="chip-radio"><input type="radio" name="vibe" value="{{ chave }}" {{ 'checked' if filtros.vibe == chave }}><span>{{ rotulo }}</span></label>
+    {% endfor %}
+  </fieldset>
+  <fieldset>
+    <legend>Companhia</legend>
+    {% for chave, rotulo in companhias.items() %}
+    <label class="chip-radio"><input type="radio" name="companhia" value="{{ chave }}" {{ 'checked' if filtros.companhia == chave }}><span>{{ rotulo }}</span></label>
+    {% endfor %}
+  </fieldset>
+  <label class="interruptor">
+    <input type="checkbox" name="somente" value="1" {{ 'checked' if filtros.somente_minhas }}>
+    <span class="trilha"></span> Buscar apenas nos streamings que <strong>eu assino</strong>
+  </label>
+  <button class="botao" type="submit">Recomendar</button>
+</form>
+
+{% if buscou %}
+  {% if not assinadas and filtros.somente_minhas %}
+  <div class="msg msg-aviso">Você ainda não cadastrou assinaturas. <a href="{{ url_for('nova_assinatura') }}">Cadastre uma</a> ou desmarque o filtro.</div>
+  {% endif %}
+  <p class="detalhe">{{ total }} título{{ 's' if total != 1 }} combinam com sua escolha{% if total > resultados|length %} — mostrando os {{ resultados|length }} melhores{% endif %}.</p>
+
+  <div class="grade-titulos">
+    {% for t in resultados %}
+    <article class="card-titulo">
+      <div class="capa" style="--cor: {{ t.plataformas[0].cor if t.plataformas else '#444' }}">
+        <span class="capa-iniciais">{{ t.titulo|iniciais }}</span>
+        <span class="capa-nota" title="Pontuação de compatibilidade">{{ t.nota|round|int }}%</span>
+      </div>
+      <div class="card-corpo">
+        <h3>{{ t.titulo }}</h3>
+        <p class="meta">{{ 'Série' if t.tipo == 'serie' else 'Filme' }} · {{ t.ano }} ·
+          {{ (t.duracao_min|duracao) ~ (' por episódio' if t.tipo == 'serie' else '') }} · {{ t.classificacao }}</p>
+        <p class="sinopse">{{ t.sinopse }}</p>
+        <div class="plataformas">
+          {% for p in t.plataformas %}<span class="plat {{ 'plat-minha' if p.nome in assinadas }}" style="--cor: {{ p.cor }}">{{ p.nome }}</span>{% endfor %}
+        </div>
+        <span class="selo {{ 'selo-ok' if t.no_plano else 'selo-fora' }}">{{ 'Disponível no seu plano' if t.no_plano else 'Fora da sua assinatura' }}</span>
+        {% if t.motivos %}<ul class="motivos">{% for m in t.motivos[1 if t.no_plano else 0:] %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+        <form method="post" action="{{ url_for('historico') }}" class="form-assisti">
+          <input type="hidden" name="titulo_id" value="{{ t.id }}">
+          <input type="hidden" name="voltar" value="{{ request.full_path }}">
+          <select name="plataforma_id" aria-label="Plataforma">
+            {% for p in t.plataformas %}<option value="{{ p.id }}" {{ 'selected' if p.nome in assinadas }}>{{ p.nome }}</option>{% endfor %}
+          </select>
+          <button class="botao botao-pequeno botao-fantasma" type="submit">✓ Assisti</button>
+        </form>
+      </div>
+    </article>
+    {% else %}
+    <div class="vazio">
+      <p>Nada encontrado com esses filtros. Tente outro tempo, outra vibe ou inclua plataformas que você não assina.</p>
+    </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

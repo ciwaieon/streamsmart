@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Custo-benefício{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina"><h1>Relatório de custo-benefício</h1></div>
+<p class="detalhe">Análise dos últimos {{ r.janela }} dias, cruzando o seu histórico com o valor de cada assinatura.</p>
+
+{% if r.linhas %}
+  {% if r.economia_mensal > 0 %}
+  <div class="destaque-economia">
+    <span>Pausando as assinaturas sem uso, você economizaria</span>
+    <strong>{{ r.economia_mensal|moeda }}/mês</strong>
+    <span>ou {{ r.economia_anual|moeda }} por ano.</span>
+  </div>
+  {% endif %}
+
+  <div class="lista-relatorio">
+  {% for l in r.linhas %}
+    <article class="item-relatorio status-{{ l.cor }}">
+      <div class="item-topo">
+        <span class="ponto" style="background: {{ l.assinatura.cor }}"></span>
+        <strong>{{ l.assinatura.plataforma }}</strong>
+        <span class="tag tag-{{ l.cor }}">{{ {'pausar': 'Sugerimos pausar', 'avaliar': 'Avaliar', 'teste': 'Teste grátis', 'manter': 'Vale a pena'}[l.status] }}</span>
+      </div>
+      <div class="item-numeros">
+        <div><span class="rotulo">Custo mensal</span><strong>{{ l.custo_mensal|moeda }}</strong></div>
+        <div><span class="rotulo">Horas assistidas</span><strong>{{ l.horas|string|replace('.', ',') }} h</strong></div>
+        <div><span class="rotulo">Títulos</span><strong>{{ l.titulos }}</strong></div>
+        <div><span class="rotulo">Custo por hora</span><strong>{{ l.custo_hora|moeda if l.custo_hora is not none else '—' }}</strong></div>
+      </div>
+      <p class="sugestao">{{ l.sugestao }}</p>
+    </article>
+  {% endfor %}
+  </div>
+{% else %}
+<div class="vazio"><p>Cadastre suas assinaturas para ver o relatório.</p>
+  <a class="botao" href="{{ url_for('nova_assinatura') }}">Cadastrar assinatura</a></div>
+{% endif %}
+{% endblock %}

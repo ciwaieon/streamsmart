@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}StreamSmart{% endblock %} · StreamSmart</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% block corpo_classe %}{% endblock %}">
+  <header class="topo">
+    <a class="marca" href="{{ url_for('landing') }}">
+      <span class="marca-icone">▶</span><span>Stream<strong>Smart</strong></span>
+    </a>
+    {% if usuario_nome %}
+    <button class="menu-botao" aria-label="Abrir menu" onclick="document.body.classList.toggle('menu-aberto')">☰</button>
+    <nav class="menu">
+      {% set ep = request.endpoint %}
+      <a href="{{ url_for('painel') }}" class="{{ 'ativo' if ep == 'painel' }}">Painel</a>
+      <a href="{{ url_for('assinaturas') }}" class="{{ 'ativo' if ep and 'assinatura' in ep }}">Assinaturas</a>
+      <a href="{{ url_for('recomendar') }}" class="{{ 'ativo' if ep == 'recomendar' }}">O que assistir?</a>
+      <a href="{{ url_for('historico') }}" class="{{ 'ativo' if ep == 'historico' }}">Histórico</a>
+      <a href="{{ url_for('relatorio_view') }}" class="{{ 'ativo' if ep == 'relatorio_view' }}">Custo-benefício</a>
+      <span class="menu-usuario">{{ usuario_nome.split()[0] }} · <a href="{{ url_for('sair') }}">Sair</a></span>
+    </nav>
+    {% else %}
+    <nav class="menu menu-publico">
+      <a href="{{ url_for('login') }}">Entrar</a>
+      <a class="botao botao-pequeno" href="{{ url_for('cadastro') }}">Criar conta</a>
+    </nav>
+    {% endif %}
+  </header>
+
+  <main class="{% block main_classe %}conteudo{% endblock %}">
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% if mensagens %}
+      <div class="mensagens">
+        {% for categoria, msg in mensagens %}<div class="msg msg-{{ categoria }}">{{ msg }}</div>{% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <footer class="rodape">
+    StreamSmart · Projeto Integrador: Laboratório de Programação · UNISA {{ ano_atual }}
+  </footer>
+</body>
+</html>

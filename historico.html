@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block titulo %}Histórico{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina"><h1>Histórico do que assisti</h1></div>
+
+<section class="painel-bloco">
+  <h2>Registrar</h2>
+  <form method="post" class="formulario formulario-linha">
+    <label>Título
+      <select name="titulo_id" id="sel-titulo" required>
+        <option value="">Selecione…</option>
+        {% for t in catalogo %}
+        <option value="{{ t.id }}" data-duracao="{{ t.duracao_min }}"
+                data-plataformas='{{ t.plataformas|tojson }}'>{{ t.titulo }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Plataforma <select name="plataforma_id" id="sel-plataforma" required><option value="">—</option></select></label>
+    <label>Data <input type="date" name="data" value="{{ hoje }}" max="{{ hoje }}" required></label>
+    <label>Minutos <input type="number" name="minutos" id="minutos" min="1" required></label>
+    <button class="botao" type="submit">Registrar</button>
+  </form>
+</section>
+
+<section class="painel-bloco">
+  <h2>Registros</h2>
+  {% if historico %}
+  <div class="tabela-rolagem">
+  <table class="tabela">
+    <thead><tr><th>Data</th><th>Título</th><th>Plataforma</th><th>Tempo</th><th></th></tr></thead>
+    <tbody>
+    {% for h in historico %}
+      <tr>
+        <td>{{ h.data|data_br }}</td>
+        <td>{{ h.titulo }}</td>
+        <td><span class="ponto" style="background: {{ h.cor }}"></span>{{ h.plataforma }}</td>
+        <td>{{ h.minutos|duracao }}</td>
+        <td class="acoes">
+          <form method="post" action="{{ url_for('excluir_historico', hid=h.id) }}">
+            <button class="botao botao-pequeno botao-perigo" type="submit">Remover</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="detalhe">Nada registrado ainda. Use o formulário acima ou o botão “✓ Assisti” nas recomendações.</p>
+  {% endif %}
+</section>
+
+<script>
+  // Ao escolher um título, carrega só as plataformas onde ele está e sugere a duração
+  const selT = document.getElementById('sel-titulo'), selP = document.getElementById('sel-plataforma'),
+        minutos = document.getElementById('minutos');
+  selT.addEventListener('change', () => {
+    const op = selT.selectedOptions[0];
+    selP.innerHTML = '';
+    if (!op.value) { selP.innerHTML = '<option value="">—</option>'; return; }
+    JSON.parse(op.dataset.plataformas).forEach(p => selP.add(new Option(p.nome, p.id)));
+    minutos.value = op.dataset.duracao;
+  });
+</script>
+{% endblock %}

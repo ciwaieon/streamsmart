@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block titulo %}Painel{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <h1>Olá, {{ usuario_nome.split()[0] }} 👋</h1>
+  <a class="botao" href="{{ url_for('recomendar') }}">O que assistir hoje?</a>
+</div>
+
+{% if not assinaturas %}
+<div class="vazio">
+  <p>Você ainda não cadastrou nenhum streaming.</p>
+  <a class="botao" href="{{ url_for('nova_assinatura') }}">Cadastrar minha primeira assinatura</a>
+</div>
+{% else %}
+
+<section class="cards-resumo">
+  <div class="card-resumo">
+    <span class="rotulo">Gasto total no mês</span>
+    <strong class="valor-grande">{{ resumo.total_mensal|moeda }}</strong>
+    <span class="detalhe">{{ resumo.quantidade }} assinatura{{ 's' if resumo.quantidade != 1 }}</span>
+  </div>
+  <div class="card-resumo">
+    <span class="rotulo">Projeção anual</span>
+    <strong class="valor-grande">{{ resumo.projecao_anual|moeda }}</strong>
+    <span class="detalhe">mantendo os planos atuais</span>
+  </div>
+  <div class="card-resumo card-duplo">
+    <div>
+      <span class="rotulo">Mais caro</span>
+      <strong><span class="ponto" style="background: {{ resumo.mais_cara.cor }}"></span>{{ resumo.mais_cara.plataforma }}</strong>
+      <span class="detalhe">{{ resumo.mais_cara.valor_mensal|moeda }}/mês</span>
+    </div>
+    <span class="versus">vs</span>
+    <div>
+      <span class="rotulo">Mais assistido</span>
+      {% if mais_assistida %}
+      <strong>{{ mais_assistida.plataforma }}</strong>
+      <span class="detalhe">{{ mais_assistida.horas|string|replace('.', ',') }} h nos últimos 30 dias</span>
+      {% else %}
+      <strong>—</strong><span class="detalhe">registre o que assistiu</span>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% if alertas %}
+<section class="painel-bloco">
+  <h2>⚠️ Alertas</h2>
+  <ul class="lista-alertas">
+    {% for al in alertas %}
+    <li>
+      <span class="ponto" style="background: {{ al.assinatura.cor }}"></span>
+      <strong>{{ al.assinatura.plataforma }}</strong>
+      <span class="tag {{ 'tag-info' if al.tipo == 'teste' else 'tag-alerta' }}">{{ al.texto }}</span>
+      {% if al.tipo == 'cobranca' %}<span class="detalhe">{{ al.assinatura.valor|moeda }}</span>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<div class="grade-2">
+  <section class="painel-bloco">
+    <h2>Distribuição dos gastos</h2>
+    {% if fatias %}
+    <div class="pizza">
+      <svg viewBox="0 0 200 200" role="img" aria-label="Gráfico de pizza dos gastos por plataforma">
+        {% for f in fatias %}<path d="{{ f.caminho }}" fill="{{ f.cor }}" stroke="var(--fundo-card)" stroke-width="2"><title>{{ f.nome }}: {{ f.valor|moeda }} ({{ '%.0f'|format(f.pct) }}%)</title></path>{% endfor %}
+        <circle cx="100" cy="100" r="46" fill="var(--fundo-card)"/>
+        <text x="100" y="96" text-anchor="middle" class="pizza-rotulo">por mês</text>
+        <text x="100" y="114" text-anchor="middle" class="pizza-valor">{{ resumo.total_mensal|moeda }}</text>
+      </svg>
+      <ul class="legenda">
+        {% for f in fatias %}
+        <li><span class="ponto" style="background: {{ f.cor }}"></span>{{ f.nome }}
+          <span class="legenda-valor">{{ f.valor|moeda }} · {{ '%.0f'|format(f.pct) }}%</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% else %}<p class="detalhe">Sem gastos cadastrados.</p>{% endif %}
+  </section>
+
+  <section class="painel-bloco">
+    <h2>Cobranças de {{ mes_nome }}</h2>
+    <div class="linha-tempo">
+      <div class="trilho"></div>
+      <div class="marcador-hoje" style="left: {{ (hoje.day - 1) / (dias_mes - 1) * 100 }}%"><span>hoje</span></div>
+      {% for c in cobrancas %}
+      <div class="evento {{ 'passou' if c.passou }}" style="left: {{ (c.dia - 1) / (dias_mes - 1) * 100 }}%; --cor: {{ c.assinatura.cor }}"
+           title="{{ c.assinatura.plataforma }}: {{ c.valor|moeda }} no dia {{ c.dia }}"></div>
+      {% endfor %}
+      <div class="trilho-dias"><span>1</span><span>{{ (dias_mes // 2) + 1 }}</span><span>{{ dias_mes }}</span></div>
+    </div>
+    <ul class="lista-cobrancas">
+      {% for c in cobrancas %}
+      <li class="{{ 'passou' if c.passou }}">
+        <span class="dia">{{ '%02d'|format(c.dia) }}/{{ '%02d'|format(hoje.month) }}</span>
+        <span class="ponto" style="background: {{ c.assinatura.cor }}"></span>
+        {{ c.assinatura.plataforma }}
+        <span class="legenda-valor">{{ c.valor|moeda }}{% if c.passou %} · cobrado{% endif %}</span>
+      </li>
+      {% else %}
+      <li class="detalhe">Nenhuma cobrança neste mês.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+
+<section class="painel-bloco">
+  <div class="cabecalho-bloco">
+    <h2>Assinaturas ativas</h2>
+    <a href="{{ url_for('assinaturas') }}">Gerenciar →</a>
+  </div>
+  <div class="cards-assinaturas">
+    {% for a in assinaturas %}
+    <div class="card-assinatura" style="--cor: {{ a.cor }}">
+      <strong>{{ a.plataforma }}</strong>
+      <span class="detalhe">{{ a.plano }}</span>
+      <span class="preco">{{ a.valor|moeda }}<small>/{{ 'ano' if a.periodicidade == 'anual' else 'mês' }}</small></span>
+      <span class="detalhe">Vence em {{ a.proximo|data_br }}</span>
+      {% if a.id in ids_alerta %}<span class="tag {{ 'tag-info' if ids_alerta[a.id].tipo == 'teste' else 'tag-alerta' }}">{{ ids_alerta[a.id].texto }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}
