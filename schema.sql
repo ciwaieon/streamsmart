@@ -52,8 +52,12 @@ CREATE TABLE IF NOT EXISTS titulos (
     duracao_min    INTEGER NOT NULL,   -- filme: duração total; série: duração média do episódio
     generos        TEXT    NOT NULL,   -- separados por vírgula
     vibes          TEXT    NOT NULL,   -- separadas por vírgula: rir, suspense, emocao, leve
-    classificacao  TEXT    NOT NULL,   -- L, 10, 12, 14, 16, 18
-    sinopse        TEXT    NOT NULL
+    classificacao  TEXT,               -- L, 10, 12, 14, 16, 18 ou NULL (sem informação)
+    sinopse        TEXT    NOT NULL,
+    tmdb_id        INTEGER,            -- identificador no The Movie Database
+    poster_url     TEXT,               -- endereço da imagem do pôster (TMDB)
+    nota_tmdb      REAL,               -- nota média no TMDB (0 a 10)
+    origem         TEXT    NOT NULL DEFAULT 'demo'   -- 'demo' (catálogo local) ou 'tmdb'
 );
 
 -- Em quais plataformas cada título está disponível (relação N:N)
@@ -73,5 +77,35 @@ CREATE TABLE IF NOT EXISTS historico (
     minutos         INTEGER NOT NULL CHECK (minutos > 0)
 );
 
+-- Avaliações dos usuários (RF09)
+CREATE TABLE IF NOT EXISTS avaliacoes (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    usuario_id  INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    titulo_id   INTEGER NOT NULL REFERENCES titulos(id) ON DELETE CASCADE,
+    nota        INTEGER NOT NULL CHECK (nota BETWEEN 1 AND 5),
+    comentario  TEXT,
+    criado_em   TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (usuario_id, titulo_id)
+);
+
+-- Amizades entre usuários (RF10)
+CREATE TABLE IF NOT EXISTS amizades (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    solicitante_id   INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    destinatario_id  INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    status           TEXT    NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente', 'aceita')),
+    criado_em        TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (solicitante_id, destinatario_id),
+    CHECK (solicitante_id <> destinatario_id)
+);
+
+-- Configurações do sistema (ex.: chave da API do TMDB)
+CREATE TABLE IF NOT EXISTS configuracoes (
+    chave  TEXT PRIMARY KEY,
+    valor  TEXT
+);
+
 CREATE INDEX IF NOT EXISTS idx_assinaturas_usuario ON assinaturas(usuario_id);
 CREATE INDEX IF NOT EXISTS idx_historico_usuario_data ON historico(usuario_id, data);
+CREATE INDEX IF NOT EXISTS idx_avaliacoes_titulo ON avaliacoes(titulo_id);
+CREATE INDEX IF NOT EXISTS idx_amizades_destinatario ON amizades(destinatario_id);

@@ -1,55 +1,59 @@
 {% extends "base.html" %}
-{% block titulo %}Organize seus streamings{% endblock %}
-{% block main_classe %}landing{% endblock %}
-{% block conteudo %}
-<section class="hero">
-  <div class="hero-texto">
-    <p class="sobretitulo">Assista ao que importa, controle o que gasta.</p>
-    <h1>Organize seus streamings e descubra o filme certo.</h1>
-    <p class="hero-sub">O StreamSmart junta num só lugar quanto você paga em cada plataforma e o que vale a pena
-      assistir agora, de acordo com o seu tempo e o seu humor, no streaming que você já assina.</p>
-    <div class="hero-acoes">
-      <a class="botao" href="{{ url_for('cadastro') }}">Começar grátis</a>
-      <a class="botao botao-fantasma" href="{{ url_for('login') }}">Ver a demonstração</a>
-    </div>
-    <p class="dica">Demonstração: <code>demo@streamsmart.com</code> · senha <code>demo123</code></p>
-  </div>
+{% block titulo %}Assista ao que importa, controle o que gasta{% endblock %}
+{% block corpo %}
+<div class="landing">
+  <header class="landing-topo">
+    <a class="logo" href="{{ url_for('landing') }}">{% include "_logo.html" %}<span class="logo-nome">StreamSmart</span></a>
+    <nav>
+      <a href="{{ url_for('login') }}">Entrar</a>
+      <a class="botao botao-claro botao-pequeno" href="{{ url_for('cadastro') }}">Criar conta</a>
+    </nav>
+  </header>
 
-  <div class="hero-mockup" aria-hidden="true">
-    <div class="mock-card">
-      <span class="mock-rotulo">Gasto do mês</span>
-      <strong class="mock-valor">R$ 135,60</strong>
-      <span class="mock-detalhe">Projeção anual: R$ 1.627,20</span>
-      <div class="mock-barras">
-        <span style="width:35%;background:#E50914"></span><span style="width:30%;background:#113CCF"></span>
-        <span style="width:20%;background:#7B2FF7"></span><span style="width:15%;background:#00A8E1"></span>
+  <section class="hero">
+    <div>
+      <h1>Assista ao que importa, controle o que gasta.</h1>
+      <p>Você diz quanto tempo tem e qual é a vibe da noite. O StreamSmart mostra o que assistir nos streamings que você já paga e avisa quando uma assinatura não está valendo o preço.</p>
+      <div class="hero-acoes">
+        <a class="botao" href="{{ url_for('cadastro') }}">Criar minha conta</a>
+        <a class="botao botao-linha" href="{{ url_for('login') }}">Entrar com a conta de demonstração</a>
+      </div>
+      <p class="pequeno">Demonstração: demo@streamsmart.com, senha demo123</p>
+    </div>
+
+    <div class="hero-palco" aria-hidden="true">
+      <div class="ingresso">
+        <div class="ingresso-corpo">
+          <span class="rotulo">Você gasta por mês</span>
+          <span class="valor-grande">R$ 135,60</span>
+          <p>São R$ 1.627,20 por ano. A HBO Max está sem uso há 2 meses.</p>
+        </div>
+        <div class="ingresso-canhoto">
+          <span class="rotulo">Próxima cobrança</span>
+          <span class="valor-medio">Netflix</span>
+          <span>em 2 dias, R$ 44,90</span>
+        </div>
+      </div>
+      <div class="vibes-amostra">
+        {% for chave, v in vibes.items() %}<span class="{{ 'marcada' if chave in ('rir', 'tensao') }}">{{ v.rotulo }}</span>{% endfor %}
       </div>
     </div>
-    <div class="mock-card mock-alerta">
-      <span class="tag tag-alerta">Renovação em 2 dias!</span>
-      <span class="tag tag-ruim">Sem uso há 2 meses</span>
-    </div>
-    <div class="mock-card">
-      <span class="mock-rotulo">Qual é a vibe de hoje?</span>
-      <div class="mock-chips">
-        {% for chave, rotulo in vibes.items() %}<span class="chip {{ 'chip-ativo' if loop.first }}">{{ rotulo }}</span>{% endfor %}
-      </div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section class="recursos">
-  <article>
-    <h3>💰 Controle de gastos</h3>
-    <p>Total do mês, projeção anual e alertas antes de cada renovação ou do fim de um teste grátis.</p>
-  </article>
-  <article>
-    <h3>🎬 Recomendação por vibe</h3>
-    <p>Diga quanto tempo você tem, seu humor e com quem vai assistir. A gente filtra o catálogo para você.</p>
-  </article>
-  <article>
-    <h3>📊 Custo-benefício</h3>
-    <p>Descubra quanto custa cada hora assistida e quais assinaturas valem uma pausa.</p>
-  </article>
-</section>
+  <section class="faixa-recursos">
+    <article>
+      <h2>Quanto custa cada hora</h2>
+      <p>Total do mês, projeção do ano e o custo por hora que você realmente assistiu em cada plataforma.</p>
+    </article>
+    <article>
+      <h2>A sessão certa para hoje</h2>
+      <p>Filtre por tempo, vibe, categoria, classificação e plataforma, com milhares de títulos do TMDB.</p>
+    </article>
+    <article>
+      <h2>O que seus amigos acharam</h2>
+      <p>Avalie o que assistiu, adicione amigos e veja as notas deles antes de dar o play.</p>
+    </article>
+  </section>
+  {% include "_rodape.html" %}
+</div>
 {% endblock %}

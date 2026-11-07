@@ -3,46 +3,44 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block titulo %}StreamSmart{% endblock %} · StreamSmart</title>
+  <title>{% block titulo %}StreamSmart{% endblock %} | StreamSmart</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="{% block corpo_classe %}{% endblock %}">
-  <header class="topo">
-    <a class="marca" href="{{ url_for('landing') }}">
-      <span class="marca-icone">▶</span><span>Stream<strong>Smart</strong></span>
-    </a>
-    {% if usuario_nome %}
-    <button class="menu-botao" aria-label="Abrir menu" onclick="document.body.classList.toggle('menu-aberto')">☰</button>
-    <nav class="menu">
-      {% set ep = request.endpoint %}
+<body>
+{% block corpo %}
+<div class="app">
+  <aside class="lateral">
+    <a class="logo" href="{{ url_for('painel') }}">{% include "_logo.html" %}<span class="logo-nome">StreamSmart</span></a>
+    <button class="menu-botao" aria-label="Abrir menu" onclick="document.body.classList.toggle('menu-aberto')">Menu</button>
+    {% set ep = request.endpoint %}
+    <nav class="navegacao" aria-label="Principal">
+      <span class="grupo">Seu dinheiro</span>
       <a href="{{ url_for('painel') }}" class="{{ 'ativo' if ep == 'painel' }}">Painel</a>
       <a href="{{ url_for('assinaturas') }}" class="{{ 'ativo' if ep and 'assinatura' in ep }}">Assinaturas</a>
-      <a href="{{ url_for('recomendar') }}" class="{{ 'ativo' if ep == 'recomendar' }}">O que assistir?</a>
-      <a href="{{ url_for('historico') }}" class="{{ 'ativo' if ep == 'historico' }}">Histórico</a>
       <a href="{{ url_for('relatorio_view') }}" class="{{ 'ativo' if ep == 'relatorio_view' }}">Custo-benefício</a>
-      <span class="menu-usuario">{{ usuario_nome.split()[0] }} · <a href="{{ url_for('sair') }}">Sair</a></span>
+      <span class="grupo">Sessão</span>
+      <a href="{{ url_for('recomendar') }}" class="{{ 'ativo' if ep in ('recomendar', 'titulo') }}">O que assistir</a>
+      <a href="{{ url_for('historico') }}" class="{{ 'ativo' if ep == 'historico' }}">Histórico</a>
+      <a href="{{ url_for('avaliacoes') }}" class="{{ 'ativo' if ep == 'avaliacoes' }}">Minhas avaliações</a>
+      <a href="{{ url_for('amigos') }}" class="{{ 'ativo' if ep == 'amigos' }}">Amigos {% if pedidos_pendentes %}<span class="contador" title="Pedidos de amizade">{{ pedidos_pendentes }}</span>{% endif %}</a>
+      <span class="grupo">Sistema</span>
+      <a href="{{ url_for('catalogo') }}" class="{{ 'ativo' if ep == 'catalogo' }}">Catálogo TMDB</a>
     </nav>
-    {% else %}
-    <nav class="menu menu-publico">
-      <a href="{{ url_for('login') }}">Entrar</a>
-      <a class="botao botao-pequeno" href="{{ url_for('cadastro') }}">Criar conta</a>
-    </nav>
-    {% endif %}
-  </header>
+    <div class="lateral-rodape">
+      <strong>{{ usuario_nome }}</strong>
+      <a href="{{ url_for('sair') }}">Sair da conta</a>
+    </div>
+  </aside>
 
-  <main class="{% block main_classe %}conteudo{% endblock %}">
-    {% with mensagens = get_flashed_messages(with_categories=true) %}
-      {% if mensagens %}
-      <div class="mensagens">
-        {% for categoria, msg in mensagens %}<div class="msg msg-{{ categoria }}">{{ msg }}</div>{% endfor %}
-      </div>
-      {% endif %}
-    {% endwith %}
-    {% block conteudo %}{% endblock %}
-  </main>
-
-  <footer class="rodape">
-    StreamSmart · Projeto Integrador: Laboratório de Programação · UNISA {{ ano_atual }}
-  </footer>
+  <div class="principal">
+    <main class="conteudo">
+      {% include "_mensagens.html" %}
+      {% block conteudo %}{% endblock %}
+    </main>
+    {% include "_rodape.html" %}
+  </div>
+</div>
+{% endblock %}
 </body>
 </html>

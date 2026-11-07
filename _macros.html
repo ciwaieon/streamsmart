@@ -1,0 +1,29 @@
+{# Componentes reaproveitados pelas telas #}
+
+{% macro capa(t, cor=None) -%}
+  {%- if t.poster_url -%}
+    <img src="{{ t.poster_url }}" alt="Pôster de {{ t.titulo }}" loading="lazy">
+  {%- else -%}
+    <div class="capa-gerada" style="--cor: {{ cor or (t.plataformas[0].cor if t.plataformas else '#25344F') }}">
+      <strong>{{ t.titulo }}</strong><span>{{ 'Série' if t.tipo == 'serie' else 'Filme' }}{% if t.ano %}, {{ t.ano }}{% endif %}</span>
+    </div>
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro classif(c) -%}
+  {%- if c -%}<span class="classif c-{{ c }}" title="{{ 'Livre para todos os públicos' if c == 'L' else 'Não recomendado para menores de ' ~ c ~ ' anos' }}">{{ c }}</span>
+  {%- else -%}<span class="classif c-nd" title="Classificação indicativa não informada">?</span>{%- endif -%}
+{%- endmacro %}
+
+{% macro avatar(nome) -%}
+  <span class="avatar" aria-hidden="true">{{ (nome.split()[0][0] ~ (nome.split()[-1][0] if nome.split()|length > 1 else ''))|upper }}</span>
+{%- endmacro %}
+
+{% macro estrelas_form(nome_campo, atual=0, prefixo='n') -%}
+  <span class="nota-estrelas" role="radiogroup" aria-label="Nota de 1 a 5 estrelas">
+    {%- for n in range(5, 0, -1) -%}
+      <input type="radio" id="{{ prefixo }}-{{ n }}" name="{{ nome_campo }}" value="{{ n }}" {{ 'checked' if atual == n }} required>
+      <label for="{{ prefixo }}-{{ n }}" title="{{ n }} estrela{{ 's' if n > 1 }}">★</label>
+    {%- endfor -%}
+  </span>
+{%- endmacro %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% from "_macros.html" import capa, avatar %}
+{% block titulo %}Amigos{% endblock %}
+{% block conteudo %}
+<div class="topo-pagina">
+  <div>
+    <h1>Amigos</h1>
+    <p>Conecte-se com quem tem gosto parecido. As notas dos seus amigos aparecem nos títulos e pesam nas suas recomendações.</p>
+  </div>
+</div>
+
+<div class="grade-amigos">
+  <div>
+    <section class="folha bloco">
+      <h2>Adicionar amigo</h2>
+      <form method="post" action="{{ url_for('adicionar_amigo') }}" class="formulario">
+        <label>E-mail da pessoa no StreamSmart <input type="email" name="email" required placeholder="nome@exemplo.com"></label>
+        <button class="botao" type="submit">Enviar pedido de amizade</button>
+      </form>
+    </section>
+
+    {% if recebidos %}
+    <section class="folha bloco">
+      <h2>Pedidos para você</h2>
+      <ul class="lista-simples">
+        {% for p in recebidos %}
+        <li>{{ avatar(p.nome) }}<span><strong>{{ p.nome }}</strong><br><span class="suave pequeno">{{ p.email }}</span></span>
+          <span class="fim">
+            <form method="post" action="{{ url_for('responder_pedido', pid=p.id, acao='aceitar') }}"><button class="botao botao-pequeno" type="submit">Aceitar</button></form>
+            <form method="post" action="{{ url_for('responder_pedido', pid=p.id, acao='recusar') }}"><button class="botao botao-pequeno botao-linha" type="submit">Recusar</button></form>
+          </span></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    <section class="folha bloco">
+      <h2>Seus amigos</h2>
+      {% if amigos %}
+      <ul class="lista-simples">
+        {% for a in amigos %}
+        <li>{{ avatar(a.nome) }}<span><strong>{{ a.nome }}</strong><br><span class="suave pequeno">{{ a.avaliacoes }} avaliaç{{ 'ões' if a.avaliacoes != 1 else 'ão' }}</span></span>
+          <span class="fim"><form method="post" action="{{ url_for('remover_amigo', amigo_id=a.id) }}" onsubmit="return confirm('Desfazer a amizade com {{ a.nome }}?')">
+            <button class="botao-texto" type="submit">Desfazer amizade</button></form></span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="suave">Você ainda não tem amigos aqui. Envie um pedido pelo e-mail da pessoa.</p>
+      {% endif %}
+      {% if enviados %}
+      <h3 style="margin-top:1.25rem">Aguardando resposta</h3>
+      <ul class="lista-simples">
+        {% for p in enviados %}
+        <li><span>{{ p.nome }}</span><span class="fim"><form method="post" action="{{ url_for('responder_pedido', pid=p.id, acao='cancelar') }}"><button class="botao-texto" type="submit">Cancelar pedido</button></form></span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </section>
+  </div>
+
+  <section>
+    <h2 style="color:var(--tan)">O que seus amigos andam vendo</h2>
+    {% if feed %}
+    <ul class="feed sobre-azul">
+      {% for a in feed %}
+      <li>
+        <a class="mini-poster" href="{{ url_for('titulo', tid=a.titulo_id) }}">{{ capa(a, '#2E4060') }}</a>
+        <div>
+          <strong>{{ a.nome }}</strong> avaliou <a class="titulo-link" href="{{ url_for('titulo', tid=a.titulo_id) }}">{{ a.titulo }}</a>
+          <div class="estrelas" aria-label="{{ a.nota }} de 5 estrelas">{{ a.nota|estrelas }}</div>
+          {% if a.comentario %}<p>{{ a.comentario }}</p>{% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="vazio"><p>Quando seus amigos avaliarem filmes e séries, as notas aparecem aqui.</p></div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

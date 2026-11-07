@@ -1,34 +1,37 @@
 {% extends "base.html" %}
 {% block titulo %}Assinaturas{% endblock %}
 {% block conteudo %}
-<div class="cabecalho-pagina">
-  <h1>Minhas assinaturas</h1>
-  <a class="botao" href="{{ url_for('nova_assinatura') }}">+ Nova assinatura</a>
+<div class="topo-pagina">
+  <div>
+    <h1>Assinaturas</h1>
+    {% if assinaturas %}<p>{{ resumo.total_mensal|moeda }} por mês, {{ resumo.projecao_anual|moeda }} por ano.</p>{% endif %}
+  </div>
+  <a class="botao" href="{{ url_for('nova_assinatura') }}">Nova assinatura</a>
 </div>
 
 {% if assinaturas %}
-<p class="detalhe">Total: <strong>{{ resumo.total_mensal|moeda }}/mês</strong> · {{ resumo.projecao_anual|moeda }}/ano</p>
+<section class="folha">
 <div class="tabela-rolagem">
 <table class="tabela">
   <thead>
-    <tr><th>Serviço</th><th>Plano</th><th>Valor</th><th>Equiv. mensal</th><th>Próximo vencimento</th><th></th></tr>
+    <tr><th>Serviço</th><th>Plano</th><th>Valor</th><th>Por mês</th><th>Próxima cobrança</th><th><span class="visualmente-oculto">Ações</span></th></tr>
   </thead>
   <tbody>
   {% for a in assinaturas %}
     <tr class="{{ 'linha-alerta' if a.id in ids_alerta }}">
-      <td><span class="ponto" style="background: {{ a.cor }}"></span><strong>{{ a.plataforma }}</strong></td>
+      <td><span class="ponto" style="background: {{ a.cor }};margin-right:.5rem"></span><strong>{{ a.plataforma }}</strong></td>
       <td>{{ a.plano }}</td>
-      <td>{{ a.valor|moeda }}/{{ 'ano' if a.periodicidade == 'anual' else 'mês' }}</td>
+      <td>{{ a.valor|moeda }} por {{ 'ano' if a.periodicidade == 'anual' else 'mês' }}</td>
       <td>{{ a.valor_mensal|moeda }}</td>
       <td>
         {{ a.proximo|data_br }}
-        {% if a.id in ids_alerta %}<br><span class="tag {{ 'tag-info' if ids_alerta[a.id].tipo == 'teste' else 'tag-alerta' }}">{{ ids_alerta[a.id].texto }}</span>{% endif %}
+        {% if a.id in ids_alerta %}<br><span class="selo {{ 'selo-teste' if ids_alerta[a.id].tipo == 'teste' else 'selo-alerta' }}">{{ ids_alerta[a.id].texto }}</span>{% endif %}
       </td>
       <td class="acoes">
-        <a class="botao botao-pequeno botao-fantasma" href="{{ url_for('editar_assinatura', aid=a.id) }}">Editar</a>
+        <a class="botao botao-pequeno botao-linha" href="{{ url_for('editar_assinatura', aid=a.id) }}">Editar</a>
         <form method="post" action="{{ url_for('excluir_assinatura', aid=a.id) }}"
               onsubmit="return confirm('Remover a assinatura de {{ a.plataforma }}?')">
-          <button class="botao botao-pequeno botao-perigo" type="submit">Remover</button>
+          <button class="botao botao-pequeno" type="submit">Remover</button>
         </form>
       </td>
     </tr>
@@ -36,9 +39,11 @@
   </tbody>
 </table>
 </div>
+</section>
 {% else %}
 <div class="vazio">
-  <p>Nenhuma assinatura cadastrada ainda.</p>
+  <h2 style="color:var(--tan)">Nenhuma assinatura cadastrada</h2>
+  <p>Comece pelo streaming que você mais usa.</p>
   <a class="botao" href="{{ url_for('nova_assinatura') }}">Cadastrar assinatura</a>
 </div>
 {% endif %}

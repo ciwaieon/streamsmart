@@ -4,7 +4,7 @@ from datetime import date
 
 import pytest
 
-from services import custos, recomendador, relatorio
+from services import categorias, custos, recomendador, relatorio
 from services.estruturas import MinHeap, busca_binaria, insertion_sort, merge_sort
 
 
@@ -101,17 +101,19 @@ def test_alertas_ordenados_por_urgencia_e_limitados_a_5_dias():
 # ------------------------------------------------------------ recomendador
 def titulo(**kw):
     base = {"id": 1, "titulo": "X", "tipo": "filme", "ano": 2020, "duracao_min": 90, "generos": ["comédia"],
-            "vibes": ["rir"], "classificacao": "12", "sinopse": "", "plataformas": [{"id": 1, "nome": "Netflix", "cor": "#f00"}]}
+            "vibes": ["rir"], "classificacao": "12", "sinopse": "", "nota_tmdb": 7.0,
+            "plataformas": [{"id": 1, "nome": "Netflix", "cor": "#f00"}]}
     base.update(kw)
     return base
 
 
-FILTROS = {"tempo": "90", "vibe": "rir", "companhia": "sozinho", "somente_minhas": False}
+FILTROS = {"tempo": "90", "vibes": ["rir"], "companhia": "sozinho", "classificacao_max": "18", "somente_minhas": False}
 
 
 def test_descarta_filme_mais_longo_que_o_tempo():
     assert recomendador.pontuar(titulo(duracao_min=120), FILTROS, {"Netflix"}) is None
     assert recomendador.pontuar(titulo(duracao_min=90), FILTROS, {"Netflix"}) is not None
+    assert recomendador.pontuar(titulo(duracao_min=400), {**FILTROS, "tempo": "livre"}, set()) is not None
 
 
 def test_serie_conta_episodios_que_cabem():
@@ -120,36 +122,78 @@ def test_serie_conta_episodios_que_cabem():
     assert "1 episódio cabe no seu tempo" in motivos
 
 
-def test_descarta_vibe_diferente():
-    assert recomendador.pontuar(titulo(vibes=["suspense"]), FILTROS, set()) is None
+def test_descarta_vibe_diferente_e_aceita_qualquer_das_vibes():
+    terror = titulo(generos=["terror"], vibes=[])
+    assert recomendador.pontuar(terror, FILTROS, set()) is None
+    assert recomendador.pontuar(terror, {**FILTROS, "vibes": ["rir", "medo"]}, set()) is not None
+
+
+def test_nostalgia_usa_o_ano():
+    assert categorias.afinidade(titulo(ano=1995, vibes=[]), "nostalgia") == 1.0
+    assert categorias.afinidade(titulo(ano=2022, vibes=[]), "nostalgia") == 0.0
+
+
+def test_filtros_de_categoria_e_formato():
+    f = {**FILTROS, "vibes": [], "categorias": ["drama", "romance"]}
+    assert recomendador.pontuar(titulo(generos=["comédia"]), f, set()) is None
+    assert recomendador.pontuar(titulo(generos=["comédia", "romance"]), f, set()) is not None
+    assert recomendador.pontuar(titulo(), {**FILTROS, "tipo": "serie"}, set()) is None
+
+
+def test_classificacao_maxima_e_sem_informacao():
+    assert recomendador.pontuar(titulo(classificacao="16"), {**FILTROS, "classificacao_max": "14"}, set()) is None
+    assert recomendador.pontuar(titulo(classificacao="14"), {**FILTROS, "classificacao_max": "14"}, set()) is not None
+    # sem classificação: só aparece a partir de 14 anos e nunca com crianças
+    assert recomendador.pontuar(titulo(classificacao=None), {**FILTROS, "classificacao_max": "12"}, set()) is None
+    assert recomendador.pontuar(titulo(classificacao=None), {**FILTROS, "classificacao_max": "16"}, set()) is not None
 
 
 def test_criancas_exige_classificacao_livre_ou_10():
     f = {**FILTROS, "companhia": "criancas"}
-    assert recomendador.pontuar(titulo(classificacao="16"), f, set()) is None
+    assert recomendador.pontuar(titulo(classificacao="12"), f, set()) is None
     assert recomendador.pontuar(titulo(classificacao="L"), f, set()) is not None
 
 
-def test_filtro_somente_minhas_assinaturas():
+def test_filtro_de_plataformas_e_somente_minhas():
+    assert recomendador.pontuar(titulo(), {**FILTROS, "plataformas": ["Disney+"]}, set()) is None
+    assert recomendador.pontuar(titulo(), {**FILTROS, "plataformas": ["Netflix"]}, set()) is not None
     f = {**FILTROS, "somente_minhas": True}
     assert recomendador.pontuar(titulo(), f, {"Disney+"}) is None
     assert recomendador.pontuar(titulo(), f, {"Netflix"}) is not None
 
 
-def test_titulo_no_plano_vem_antes():
+def test_titulo_no_plano_vem_antes_e_lista_vem_inteira():
     catalogo = [titulo(id=1, titulo="Fora", plataformas=[{"id": 2, "nome": "HBO Max", "cor": "#00f"}]),
-                titulo(id=2, titulo="Dentro")]
-    resultado, total = recomendador.recomendar(catalogo, FILTROS, {"Netflix"})
-    assert total == 2
-    assert [r["titulo"] for r in resultado] == ["Dentro", "Fora"]
-    assert resultado[0]["no_plano"] and not resultado[1]["no_plano"]
+                titulo(id=2, titulo="Dentro")] + [titulo(id=10 + i, titulo=f"T{i:02d}") for i in range(40)]
+    resultado = recomendador.recomendar(catalogo, FILTROS, {"Netflix"})
+    assert len(resultado) == 42                     # sem limite de quantidade
+    assert resultado[-1]["titulo"] == "Fora" and not resultado[-1]["no_plano"]
 
 
-def test_ja_assistido_perde_pontos():
+def test_ordenacoes():
+    catalogo = [titulo(id=1, titulo="Velho", ano=1990, duracao_min=80, nota_tmdb=9.0),
+                titulo(id=2, titulo="Novo", ano=2024, duracao_min=60, nota_tmdb=6.0)]
+    ordem = lambda o: [r["titulo"] for r in recomendador.recomendar(catalogo, {**FILTROS, "ordenar": o}, set())]
+    assert ordem("recentes") == ["Novo", "Velho"]
+    assert ordem("avaliacao") == ["Velho", "Novo"]
+    assert ordem("curtos") == ["Novo", "Velho"]
+
+
+def test_amigos_aumentam_a_nota_e_ja_assistido_diminui():
     t = titulo()
-    nota_nova, _ = recomendador.pontuar(t, FILTROS, {"Netflix"})
-    nota_vista, motivos = recomendador.pontuar(t, FILTROS, {"Netflix"}, ja_assistidos={1})
-    assert nota_vista < nota_nova and "Você já assistiu" in motivos
+    base, _ = recomendador.pontuar(t, FILTROS, {"Netflix"})
+    com_amigos, motivos = recomendador.pontuar(t, FILTROS, {"Netflix"}, notas_amigos={1: (4.5, 2)})
+    assert com_amigos > base and any("amigos" in m for m in motivos)
+    vista, motivos = recomendador.pontuar(t, FILTROS, {"Netflix"}, ja_assistidos={1})
+    assert vista < base and "Você já assistiu" in motivos
+
+
+def test_normalizacoes_de_categoria_e_classificacao():
+    assert categorias.normalizar_generos(["policial", "Comédia", "comédia", "xyz"]) == ["crime", "comédia"]
+    assert categorias.normalizar_classificacao("L") == "L"
+    assert categorias.normalizar_classificacao("Livre") == "L"
+    assert categorias.normalizar_classificacao("14") == "14"
+    assert categorias.normalizar_classificacao("") is None
 
 
 # ------------------------------------------------------------ relatório

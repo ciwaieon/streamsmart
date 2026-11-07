@@ -20,7 +20,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 import database
 import repositorio as repo
-from services import custos, recomendador, relatorio
+from services import categorias, custos, recomendador, relatorio
+from services.tmdb import ClienteTMDB, ErroTMDB, importar as importar_tmdb
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("STREAMSMART_SECRET", "troque-esta-chave-em-producao")
@@ -76,9 +77,24 @@ def iniciais(texto):
     return "".join(p[0] for p in palavras[:2]).upper()
 
 
+@app.template_filter("estrelas")
+def estrelas(nota):
+    nota = int(round(nota or 0))
+    return "★" * nota + "☆" * (5 - nota)
+
+
+@app.template_filter("decimal")
+def decimal_br(valor, casas=1):
+    return f"{valor:.{casas}f}".replace(".", ",")
+
+
 @app.context_processor
 def contexto_global():
-    return {"usuario_nome": session.get("usuario_nome"), "ano_atual": hoje().year}
+    pedidos = 0
+    if "usuario_id" in session:
+        pedidos = len(repo.pedidos_recebidos(db(), session["usuario_id"]))
+    return {"usuario_nome": session.get("usuario_nome"), "ano_atual": hoje().year, "pedidos_pendentes": pedidos,
+            "classificacoes": categorias.DESCRICAO_CLASSIFICACAO}
 
 
 # ------------------------------------------------------------------ autenticação (RF01)
@@ -100,7 +116,7 @@ def uid():
 def landing():
     if "usuario_id" in session:
         return redirect(url_for("painel"))
-    return render_template("landing.html", vibes=recomendador.VIBES)
+    return render_template("landing.html", vibes=categorias.VIBES)
 
 
 @app.route("/cadastro", methods=["GET", "POST"])
@@ -223,17 +239,24 @@ def painel():
         a["dias"] = (a["proximo"] - d).days
     alertas = custos.alertas(assinaturas, d)
     ids_alerta = {al["assinatura"]["id"]: al for al in alertas}
+    cobrancas = custos.cobrancas_do_mes(assinaturas, d)
+    # calendário do mês: espaços vazios até o 1º dia (semana começa no domingo) e os dias com cobrança
+    inicio_vazio = (date(d.year, d.month, 1).weekday() + 1) % 7
     _, dias_mes = calendar.monthrange(d.year, d.month)
+    por_dia = {}
+    for c in cobrancas:
+        por_dia.setdefault(c["dia"], []).append(c)
+    pagantes = [a for a in assinaturas if a["valor"] > 0]
+    proxima = min(pagantes, key=lambda a: a["dias"]) if pagantes else None
     return render_template(
         "painel.html",
         resumo=custos.resumo(assinaturas),
         mais_assistida=relatorio.mais_assistida(historico, d),
-        assinaturas=assinaturas,
-        alertas=alertas,
-        ids_alerta=ids_alerta,
+        assinaturas=assinaturas, alertas=alertas, ids_alerta=ids_alerta, proxima=proxima,
         fatias=fatias_svg(custos.fatias_pizza(assinaturas)),
-        cobrancas=custos.cobrancas_do_mes(assinaturas, d),
+        cobrancas=cobrancas, por_dia=por_dia, inicio_vazio=inicio_vazio,
         dias_mes=dias_mes, hoje=d, mes_nome=MESES[d.month - 1],
+        cores={a["plataforma"]: a["cor"] for a in assinaturas},
     )
 
 
@@ -347,24 +370,170 @@ def excluir_assinatura(aid):
 
 
 # ------------------------------------------------------------------ recomendador (RF05, RF06)
+POR_PAGINA = 24
+
+
 @app.route("/recomendar")
 @login_obrigatorio
 def recomendar():
     assinadas = {a["plataforma"] for a in repo.listar_assinaturas(db(), uid())}
-    buscou = "vibe" in request.args
+    buscou = "tempo" in request.args
+    a = request.args
     filtros = {
-        "tempo": request.args.get("tempo", "90"),
-        "vibe": request.args.get("vibe", "rir"),
-        "companhia": request.args.get("companhia", "sozinho"),
-        "somente_minhas": request.args.get("somente") == "1" if buscou else True,
+        "tempo": a.get("tempo", "90"),
+        "vibes": [v for v in a.getlist("vibe") if v in categorias.VIBES][:3],
+        "categorias": [c for c in a.getlist("categoria") if c in categorias.CATEGORIAS],
+        "tipo": a.get("tipo", "todos"),
+        "classificacao_max": a.get("classificacao", "18") if a.get("classificacao") in categorias.CLASSIFICACOES else "18",
+        "companhia": a.get("companhia", "sozinho") if a.get("companhia") in recomendador.COMPANHIAS else "sozinho",
+        "plataformas": a.getlist("plataforma"),
+        "somente_minhas": a.get("somente") == "1" if buscou else True,
+        "ordenar": a.get("ordenar", "compat") if a.get("ordenar") in recomendador.ORDENACOES else "compat",
     }
-    resultados, total = [], 0
+    resultados, total, pagina, paginas = [], 0, 1, 1
     if buscou:
         ja_vistos = {h["titulo_id"] for h in repo.listar_historico(db(), uid())}
-        resultados, total = recomendador.recomendar(repo.listar_catalogo(db()), filtros, assinadas, ja_vistos)
-    return render_template("recomendar.html", filtros=filtros, buscou=buscou, resultados=resultados, total=total,
-                           tempos=recomendador.TEMPOS, vibes=recomendador.VIBES,
-                           companhias=recomendador.COMPANHIAS, assinadas=assinadas)
+        todos = recomendador.recomendar(repo.listar_catalogo(db()), filtros, assinadas, ja_vistos,
+                                        repo.notas_amigos(db(), uid()))
+        total = len(todos)
+        paginas = max(1, math.ceil(total / POR_PAGINA))
+        try:
+            pagina = min(max(int(a.get("pagina", 1)), 1), paginas)
+        except ValueError:
+            pagina = 1
+        resultados = todos[(pagina - 1) * POR_PAGINA: pagina * POR_PAGINA]
+
+    def link_pagina(n):
+        args = a.to_dict(flat=False)
+        args["pagina"] = [str(n)]
+        return url_for("recomendar", **args) + "#resultados"
+
+    return render_template(
+        "recomendar.html", filtros=filtros, buscou=buscou, resultados=resultados, total=total,
+        pagina=pagina, paginas=paginas, link_pagina=link_pagina,
+        tempos=categorias.TEMPOS, vibes=categorias.VIBES, lista_categorias=categorias.CATEGORIAS,
+        companhias=recomendador.COMPANHIAS, tipos=recomendador.TIPOS, ordenacoes=recomendador.ORDENACOES,
+        plataformas=repo.listar_plataformas(db()), assinadas=assinadas, catalogo=repo.contar_catalogo(db()))
+
+
+# ------------------------------------------------------------------ página do título e avaliações (RF09)
+@app.route("/titulo/<int:tid>")
+@login_obrigatorio
+def titulo(tid):
+    t = repo.buscar_titulo(db(), tid)
+    if t is None:
+        flash("Título não encontrado.", "erro")
+        return redirect(url_for("recomendar"))
+    t["generos"] = [g for g in (t["generos"] or "").split(",") if g]
+    t["plataformas"] = repo.plataformas_do_titulo(db(), tid)
+    dos_amigos = repo.avaliacoes_amigos_titulo(db(), uid(), tid)
+    media = sum(x["nota"] for x in dos_amigos) / len(dos_amigos) if dos_amigos else None
+    vezes = [h for h in repo.listar_historico(db(), uid()) if h["titulo_id"] == tid]
+    assinadas = {x["plataforma"] for x in repo.listar_assinaturas(db(), uid())}
+    return render_template("titulo.html", t=t, minha=repo.avaliacao_do_usuario(db(), uid(), tid),
+                           dos_amigos=dos_amigos, media_amigos=media, vezes=vezes, assinadas=assinadas,
+                           hoje=hoje().isoformat())
+
+
+@app.route("/titulo/<int:tid>/avaliar", methods=["POST"])
+@login_obrigatorio
+def avaliar(tid):
+    if repo.buscar_titulo(db(), tid) is None:
+        flash("Título não encontrado.", "erro")
+        return redirect(url_for("avaliacoes"))
+    try:
+        nota = int(request.form.get("nota", ""))
+        if not 1 <= nota <= 5:
+            raise ValueError
+    except ValueError:
+        flash("Escolha uma nota de 1 a 5 estrelas.", "erro")
+        return redirect(url_for("titulo", tid=tid))
+    comentario = request.form.get("comentario", "").strip()[:500]
+    repo.avaliar(db(), uid(), tid, nota, comentario)
+    flash("Avaliação salva. Seus amigos já podem ver.", "sucesso")
+    voltar = request.form.get("voltar", "")
+    return redirect(voltar if voltar.startswith("/") and not voltar.startswith("//") else url_for("titulo", tid=tid))
+
+
+@app.route("/titulo/<int:tid>/avaliacao/excluir", methods=["POST"])
+@login_obrigatorio
+def excluir_avaliacao(tid):
+    repo.excluir_avaliacao(db(), uid(), tid)
+    flash("Avaliação removida.", "sucesso")
+    return redirect(url_for("titulo", tid=tid))
+
+
+@app.route("/avaliacoes")
+@login_obrigatorio
+def avaliacoes():
+    return render_template("avaliacoes.html", pendentes=repo.para_avaliar(db(), uid()),
+                           minhas=repo.minhas_avaliacoes(db(), uid()))
+
+
+# ------------------------------------------------------------------ amigos (RF10)
+@app.route("/amigos")
+@login_obrigatorio
+def amigos():
+    return render_template("amigos.html", amigos=repo.listar_amigos(db(), uid()),
+                           recebidos=repo.pedidos_recebidos(db(), uid()), enviados=repo.pedidos_enviados(db(), uid()),
+                           feed=repo.feed_amigos(db(), uid()))
+
+
+@app.route("/amigos/adicionar", methods=["POST"])
+@login_obrigatorio
+def adicionar_amigo():
+    ok, msg = repo.solicitar_amizade(db(), uid(), request.form.get("email", ""))
+    flash(msg, "sucesso" if ok else "erro")
+    return redirect(url_for("amigos"))
+
+
+@app.route("/amigos/pedido/<int:pid>/<acao>", methods=["POST"])
+@login_obrigatorio
+def responder_pedido(pid, acao):
+    if acao == "cancelar":
+        repo.cancelar_pedido(db(), uid(), pid)
+        flash("Pedido cancelado.", "sucesso")
+    else:
+        repo.responder_pedido(db(), uid(), pid, acao == "aceitar")
+        flash("Pedido aceito." if acao == "aceitar" else "Pedido recusado.", "sucesso")
+    return redirect(url_for("amigos"))
+
+
+@app.route("/amigos/<int:amigo_id>/remover", methods=["POST"])
+@login_obrigatorio
+def remover_amigo(amigo_id):
+    repo.remover_amizade(db(), uid(), amigo_id)
+    flash("Amizade desfeita.", "sucesso")
+    return redirect(url_for("amigos"))
+
+
+# ------------------------------------------------------------------ catálogo TMDB
+@app.route("/catalogo", methods=["GET", "POST"])
+@login_obrigatorio
+def catalogo():
+    chave = repo.ler_config(db(), "tmdb_chave") or os.environ.get("TMDB_CHAVE")
+    if request.method == "POST":
+        if request.form.get("acao") == "salvar":
+            nova = request.form.get("chave", "").strip()
+            try:
+                ClienteTMDB(nova).testar()
+            except ErroTMDB as e:
+                flash(str(e), "erro")
+                return redirect(url_for("catalogo"))
+            repo.salvar_config(db(), "tmdb_chave", nova)
+            flash("Chave do TMDB conferida e salva. Agora é só importar o catálogo.", "sucesso")
+        elif request.form.get("acao") == "importar":
+            try:
+                paginas = min(max(int(request.form.get("paginas", 3)), 1), 25)
+                r = importar_tmdb(db(), ClienteTMDB(chave), paginas=paginas)
+                repo.salvar_config(db(), "tmdb_ultima_importacao", datetime.now().strftime("%d/%m/%Y %H:%M"))
+                flash(f"Catálogo importado: {r['novos']} títulos novos e {r['atualizados']} atualizados. "
+                      f"Agora são {r['total']} títulos ao todo.", "sucesso")
+            except (ErroTMDB, ValueError) as e:
+                flash(str(e) or "Não foi possível importar.", "erro")
+        return redirect(url_for("catalogo"))
+    return render_template("catalogo.html", tem_chave=bool(chave), contagem=repo.contar_catalogo(db()),
+                           ultima=repo.ler_config(db(), "tmdb_ultima_importacao"))
 
 
 # ------------------------------------------------------------------ histórico (RF07)
@@ -390,7 +559,7 @@ def historico():
             flash(str(e) if str(e) and not str(e).startswith("invalid") else "Dados inválidos.", "erro")
             return redirect(request.form.get("voltar") or url_for("historico"))
         repo.registrar_historico(db(), uid(), titulo_id, plataforma_id, data, minutos)
-        flash(f"“{titulo['titulo']}” registrado no seu histórico.", "sucesso")
+        flash(f"“{titulo['titulo']}” entrou no seu histórico. Que tal avaliar?", "sucesso")
         voltar = request.form.get("voltar", "")
         return redirect(voltar if voltar.startswith("/") and not voltar.startswith("//") else url_for("historico"))
 

@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block titulo %}Histórico{% endblock %}
 {% block conteudo %}
-<div class="cabecalho-pagina"><h1>Histórico do que assisti</h1></div>
+<div class="topo-pagina"><div><h1>Histórico</h1><p>Tudo o que você registrou como assistido. É daqui que sai o custo por hora de cada plataforma.</p></div></div>
 
-<section class="painel-bloco">
-  <h2>Registrar</h2>
-  <form method="post" class="formulario formulario-linha">
+<section class="folha bloco">
+  <h2>Registrar o que assisti</h2>
+  <form method="post" class="formulario linha-registro">
     <label>Título
       <select name="titulo_id" id="sel-titulo" required>
         <option value="">Selecione…</option>
@@ -22,7 +22,7 @@
   </form>
 </section>
 
-<section class="painel-bloco">
+<section class="folha">
   <h2>Registros</h2>
   {% if historico %}
   <div class="tabela-rolagem">
@@ -32,12 +32,12 @@
     {% for h in historico %}
       <tr>
         <td>{{ h.data|data_br }}</td>
-        <td>{{ h.titulo }}</td>
-        <td><span class="ponto" style="background: {{ h.cor }}"></span>{{ h.plataforma }}</td>
+        <td><a href="{{ url_for('titulo', tid=h.titulo_id) }}">{{ h.titulo }}</a></td>
+        <td><span class="ponto" style="background: {{ h.cor }};margin-right:.4rem"></span>{{ h.plataforma }}</td>
         <td>{{ h.minutos|duracao }}</td>
         <td class="acoes">
           <form method="post" action="{{ url_for('excluir_historico', hid=h.id) }}">
-            <button class="botao botao-pequeno botao-perigo" type="submit">Remover</button>
+            <button class="botao-texto" type="submit">Remover</button>
           </form>
         </td>
       </tr>
@@ -46,7 +46,7 @@
   </table>
   </div>
   {% else %}
-  <p class="detalhe">Nada registrado ainda. Use o formulário acima ou o botão “✓ Assisti” nas recomendações.</p>
+  <p class="detalhe">Nada registrado ainda. Use o formulário acima ou o botão "Marcar como assistido" na página de cada título.</p>
   {% endif %}
 </section>
 

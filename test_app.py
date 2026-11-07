@@ -95,15 +95,75 @@ def test_usuario_nao_acessa_assinatura_de_outro(cliente):
 
 def test_recomendador_respeita_filtros(cliente):
     entrar(cliente)
-    html = cliente.get("/recomendar?tempo=30&vibe=leve&companhia=criancas&somente=1").get_data(as_text=True)
+    html = cliente.get("/recomendar?tempo=30&vibe=relaxar&companhia=criancas&classificacao=18&somente=1").get_data(as_text=True)
     assert "Bluey" in html
     assert "Stranger Things" not in html
     assert "Fora da sua assinatura" not in html
+
     def total(url):
-        return int(re.search(r"(\d+) títulos? combinam", cliente.get(url).get_data(as_text=True)).group(1))
-    com_filtro = total("/recomendar?tempo=noite&vibe=emocao&companhia=sozinho&somente=1")
-    sem_filtro = total("/recomendar?tempo=noite&vibe=emocao&companhia=sozinho")
+        return int(re.search(r"(\d+) títulos? para você", cliente.get(url).get_data(as_text=True)).group(1))
+    com_filtro = total("/recomendar?tempo=livre&vibe=emocao&companhia=sozinho&classificacao=18&somente=1")
+    sem_filtro = total("/recomendar?tempo=livre&vibe=emocao&companhia=sozinho&classificacao=18")
     assert sem_filtro > com_filtro   # sem o filtro entram títulos de plataformas não assinadas
+    assert total("/recomendar?tempo=livre&companhia=sozinho&classificacao=18&plataforma=Globoplay") >= 1
+    assert total("/recomendar?tempo=livre&companhia=sozinho&classificacao=18&categoria=terror") <= 3
+
+
+def test_recomendador_pagina_os_resultados(cliente):
+    entrar(cliente)
+    html = cliente.get("/recomendar?tempo=livre&companhia=sozinho&classificacao=18").get_data(as_text=True)
+    assert "69 títulos para você" in html and "Página 1 de 3" in html
+    assert html.count('class="filme"') == 24
+    html = cliente.get("/recomendar?tempo=livre&companhia=sozinho&classificacao=18&pagina=3").get_data(as_text=True)
+    assert html.count('class="filme"') == 69 - 48
+
+
+def test_avaliar_titulo_e_ver_amigos(cliente):
+    entrar(cliente)
+    tid = re.search(r'<option value="(\d+)"[^>]*>Ted Lasso</option>', cliente.get("/historico").get_data(as_text=True)).group(1)
+    html = cliente.get(f"/titulo/{tid}").get_data(as_text=True)
+    assert "Ana Souza" in html and "A série mais gentil" in html      # nota de uma amiga aparece
+    assert cliente.post(f"/titulo/{tid}/avaliar", data={"nota": "9"}).status_code == 302
+    assert "Escolha uma nota" in cliente.get(f"/titulo/{tid}").get_data(as_text=True)
+    cliente.post(f"/titulo/{tid}/avaliar", data={"nota": "4", "comentario": "Muito bom"})
+    html = cliente.get("/avaliacoes").get_data(as_text=True)
+    assert "Ted Lasso" in html and "Muito bom" in html
+    cliente.post(f"/titulo/{tid}/avaliar", data={"nota": "5", "comentario": "Melhor ainda"})   # atualiza, não duplica
+    assert cliente.get("/avaliacoes").get_data(as_text=True).count("Melhor ainda") == 1
+    # amigos veem a avaliação no feed
+    cliente.get("/sair")
+    entrar(cliente, "ana@streamsmart.com", "ana12345")
+    assert "Melhor ainda" in cliente.get("/amigos").get_data(as_text=True)
+
+
+def test_fluxo_de_amizade(cliente):
+    cliente.post("/cadastro", data={"nome": "Davi Rocha", "email": "davi@x.com", "senha": "segredo1", "confirmar": "segredo1"})
+    r = cliente.post("/amigos/adicionar", data={"email": "naoexiste@x.com"}, follow_redirects=True)
+    assert "Não existe conta" in r.get_data(as_text=True)
+    r = cliente.post("/amigos/adicionar", data={"email": "davi@x.com"}, follow_redirects=True)
+    assert "seu próprio e-mail" in r.get_data(as_text=True)
+    r = cliente.post("/amigos/adicionar", data={"email": "demo@streamsmart.com"}, follow_redirects=True)
+    assert "Pedido enviado" in r.get_data(as_text=True)
+    cliente.get("/sair")
+    entrar(cliente)
+    html = cliente.get("/amigos").get_data(as_text=True)
+    assert "Davi Rocha" in html
+    pedidos = re.findall(r'/amigos/pedido/(\d+)/aceitar', html)
+    for pid in pedidos:
+        cliente.post(f"/amigos/pedido/{pid}/aceitar")
+    html = cliente.get("/amigos").get_data(as_text=True)
+    assert "Davi Rocha" in html.split("Seus amigos")[1] and "Pedidos para você" not in html
+
+
+def test_catalogo_salva_chave_conferida(cliente, monkeypatch):
+    import app as aplicacao
+    entrar(cliente)
+    monkeypatch.setattr(aplicacao.ClienteTMDB, "testar", lambda self: (_ for _ in ()).throw(aplicacao.ErroTMDB("Chave do TMDB inválida.")))
+    r = cliente.post("/catalogo", data={"acao": "salvar", "chave": "errada"}, follow_redirects=True)
+    assert "Chave do TMDB inválida" in r.get_data(as_text=True)
+    monkeypatch.setattr(aplicacao.ClienteTMDB, "testar", lambda self: True)
+    r = cliente.post("/catalogo", data={"acao": "salvar", "chave": "certa"}, follow_redirects=True)
+    assert "Chave salva e conferida" in r.get_data(as_text=True)
 
 
 def test_registrar_historico_e_validacao(cliente):
@@ -121,7 +181,7 @@ def test_relatorio_do_demo(cliente):
     entrar(cliente)
     html = cliente.get("/relatorio").get_data(as_text=True)
     assert "Sugerimos pausar" in html and "HBO Max" in html
-    assert "R$ 29,90/mês" in html
+    assert "R$ 358,80" in html
 
 
 def test_fluxo_de_recuperacao_de_senha(cliente):

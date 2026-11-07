@@ -3,6 +3,7 @@ Consultas SQL do sistema (camada de repositório).
 
 Todas as consultas usam parâmetros (?) para evitar injeção de SQL.
 """
+from services.categorias import VIBES_ANTIGAS
 
 
 # ----------------------------- Usuários -----------------------------
@@ -101,8 +102,8 @@ def listar_catalogo(con):
     catalogo = []
     for r in con.execute("SELECT * FROM titulos ORDER BY titulo"):
         t = dict(r)
-        t["generos"] = [g.strip() for g in t["generos"].split(",")]
-        t["vibes"] = [v.strip() for v in t["vibes"].split(",")]
+        t["generos"] = [g.strip() for g in (t["generos"] or "").split(",") if g.strip()]
+        t["vibes"] = [VIBES_ANTIGAS.get(v.strip(), v.strip()) for v in (t["vibes"] or "").split(",") if v.strip()]
         t["plataformas"] = plataformas_por_titulo.get(t["id"], [])
         catalogo.append(t)
     return catalogo
@@ -138,3 +139,148 @@ def registrar_historico(con, uid, titulo_id, plataforma_id, data, minutos):
 def excluir_historico(con, uid, hid):
     con.execute("DELETE FROM historico WHERE id = ? AND usuario_id = ?", (hid, uid))
     con.commit()
+
+
+def contar_catalogo(con):
+    r = con.execute("""SELECT COUNT(*) AS total, SUM(origem = 'tmdb' OR tmdb_id IS NOT NULL) AS tmdb,
+                              SUM(tipo = 'filme') AS filmes, SUM(tipo = 'serie') AS series FROM titulos""").fetchone()
+    return {k: (r[k] or 0) for k in ("total", "tmdb", "filmes", "series")}
+
+
+# ---------------------------------------------------------------- configurações
+def ler_config(con, chave):
+    r = con.execute("SELECT valor FROM configuracoes WHERE chave = ?", (chave,)).fetchone()
+    return r["valor"] if r else None
+
+
+def salvar_config(con, chave, valor):
+    con.execute("INSERT INTO configuracoes (chave, valor) VALUES (?, ?) ON CONFLICT(chave) DO UPDATE SET valor = excluded.valor",
+                (chave, valor))
+    con.commit()
+
+
+# ---------------------------------------------------------------- avaliações (RF09)
+def avaliar(con, uid, titulo_id, nota, comentario):
+    con.execute("""INSERT INTO avaliacoes (usuario_id, titulo_id, nota, comentario) VALUES (?, ?, ?, ?)
+                   ON CONFLICT(usuario_id, titulo_id) DO UPDATE SET nota = excluded.nota,
+                   comentario = excluded.comentario, criado_em = datetime('now')""",
+                (uid, titulo_id, nota, comentario or None))
+    con.commit()
+
+
+def excluir_avaliacao(con, uid, titulo_id):
+    con.execute("DELETE FROM avaliacoes WHERE usuario_id = ? AND titulo_id = ?", (uid, titulo_id))
+    con.commit()
+
+
+def avaliacao_do_usuario(con, uid, titulo_id):
+    r = con.execute("SELECT * FROM avaliacoes WHERE usuario_id = ? AND titulo_id = ?", (uid, titulo_id)).fetchone()
+    return dict(r) if r else None
+
+
+def minhas_avaliacoes(con, uid):
+    return [dict(r) for r in con.execute(
+        """SELECT a.*, t.titulo, t.tipo, t.ano, t.poster_url FROM avaliacoes a JOIN titulos t ON t.id = a.titulo_id
+           WHERE a.usuario_id = ? ORDER BY a.criado_em DESC, a.id DESC""", (uid,))]
+
+
+def para_avaliar(con, uid):
+    """Títulos que o usuário assistiu (histórico) e ainda não avaliou."""
+    return [dict(r) for r in con.execute(
+        """SELECT t.id, t.titulo, t.tipo, t.ano, t.poster_url, MAX(h.data) AS ultima_vez
+           FROM historico h JOIN titulos t ON t.id = h.titulo_id
+           WHERE h.usuario_id = ? AND t.id NOT IN (SELECT titulo_id FROM avaliacoes WHERE usuario_id = ?)
+           GROUP BY t.id ORDER BY ultima_vez DESC""", (uid, uid))]
+
+
+# ---------------------------------------------------------------- amizades (RF10)
+_AMIGOS = """SELECT CASE WHEN solicitante_id = :u THEN destinatario_id ELSE solicitante_id END AS amigo_id
+             FROM amizades WHERE status = 'aceita' AND (solicitante_id = :u OR destinatario_id = :u)"""
+
+
+def ids_amigos(con, uid):
+    return {r["amigo_id"] for r in con.execute(_AMIGOS, {"u": uid})}
+
+
+def listar_amigos(con, uid):
+    return [dict(r) for r in con.execute(
+        f"""SELECT u.id, u.nome, u.email, (SELECT COUNT(*) FROM avaliacoes a WHERE a.usuario_id = u.id) AS avaliacoes
+            FROM usuarios u WHERE u.id IN ({_AMIGOS}) ORDER BY u.nome""", {"u": uid})]
+
+
+def pedidos_recebidos(con, uid):
+    return [dict(r) for r in con.execute(
+        """SELECT am.id, u.nome, u.email FROM amizades am JOIN usuarios u ON u.id = am.solicitante_id
+           WHERE am.destinatario_id = ? AND am.status = 'pendente' ORDER BY am.criado_em""", (uid,))]
+
+
+def pedidos_enviados(con, uid):
+    return [dict(r) for r in con.execute(
+        """SELECT am.id, u.nome, u.email FROM amizades am JOIN usuarios u ON u.id = am.destinatario_id
+           WHERE am.solicitante_id = ? AND am.status = 'pendente' ORDER BY am.criado_em""", (uid,))]
+
+
+def solicitar_amizade(con, uid, email):
+    """Envia um pedido de amizade. Devolve (ok, mensagem)."""
+    outro = buscar_usuario_por_email(con, email)
+    if outro is None:
+        return False, "Não existe conta com esse e-mail no StreamSmart."
+    if outro["id"] == uid:
+        return False, "Esse é o seu próprio e-mail."
+    if outro["id"] in ids_amigos(con, uid):
+        return False, f"Você e {outro['nome']} já são amigos."
+    inverso = con.execute("SELECT id FROM amizades WHERE solicitante_id = ? AND destinatario_id = ? AND status = 'pendente'",
+                          (outro["id"], uid)).fetchone()
+    if inverso:  # a outra pessoa já tinha pedido: aceita direto
+        con.execute("UPDATE amizades SET status = 'aceita' WHERE id = ?", (inverso["id"],))
+        con.commit()
+        return True, f"Você e {outro['nome']} agora são amigos."
+    if con.execute("SELECT 1 FROM amizades WHERE solicitante_id = ? AND destinatario_id = ?", (uid, outro["id"])).fetchone():
+        return False, f"Você já enviou um pedido para {outro['nome']}."
+    con.execute("INSERT INTO amizades (solicitante_id, destinatario_id) VALUES (?, ?)", (uid, outro["id"]))
+    con.commit()
+    return True, f"Pedido enviado para {outro['nome']}."
+
+
+def responder_pedido(con, uid, pedido_id, aceitar):
+    if aceitar:
+        con.execute("UPDATE amizades SET status = 'aceita' WHERE id = ? AND destinatario_id = ? AND status = 'pendente'",
+                    (pedido_id, uid))
+    else:
+        con.execute("DELETE FROM amizades WHERE id = ? AND destinatario_id = ? AND status = 'pendente'", (pedido_id, uid))
+    con.commit()
+
+
+def cancelar_pedido(con, uid, pedido_id):
+    con.execute("DELETE FROM amizades WHERE id = ? AND solicitante_id = ? AND status = 'pendente'", (pedido_id, uid))
+    con.commit()
+
+
+def remover_amizade(con, uid, amigo_id):
+    con.execute("""DELETE FROM amizades WHERE status = 'aceita' AND
+                   ((solicitante_id = ? AND destinatario_id = ?) OR (solicitante_id = ? AND destinatario_id = ?))""",
+                (uid, amigo_id, amigo_id, uid))
+    con.commit()
+
+
+def feed_amigos(con, uid, limite=40):
+    """Avaliações mais recentes dos amigos."""
+    return [dict(r) for r in con.execute(
+        f"""SELECT a.*, u.nome, t.titulo, t.tipo, t.ano, t.poster_url FROM avaliacoes a
+            JOIN usuarios u ON u.id = a.usuario_id JOIN titulos t ON t.id = a.titulo_id
+            WHERE a.usuario_id IN ({_AMIGOS}) ORDER BY a.criado_em DESC, a.id DESC LIMIT :lim""",
+        {"u": uid, "lim": limite})]
+
+
+def avaliacoes_amigos_titulo(con, uid, titulo_id):
+    return [dict(r) for r in con.execute(
+        f"""SELECT a.*, u.nome FROM avaliacoes a JOIN usuarios u ON u.id = a.usuario_id
+            WHERE a.titulo_id = :t AND a.usuario_id IN ({_AMIGOS}) ORDER BY a.criado_em DESC""",
+        {"u": uid, "t": titulo_id})]
+
+
+def notas_amigos(con, uid):
+    """titulo_id -> (média, quantidade) das notas dos amigos."""
+    return {r["titulo_id"]: (r["media"], r["qtd"]) for r in con.execute(
+        f"""SELECT titulo_id, AVG(nota) AS media, COUNT(*) AS qtd FROM avaliacoes
+            WHERE usuario_id IN ({_AMIGOS}) GROUP BY titulo_id""", {"u": uid})}
