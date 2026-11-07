@@ -1,0 +1,3 @@
+# Copie este arquivo com o nome streaming_chave.txt e cole a chave da Streaming Availability API na linha abaixo.
+# Serve tanto a chave do site da Movie of the Night quanto a chave da RapidAPI (o sistema descobre sozinho).
+# O arquivo streaming_chave.txt fica fora do GitHub (.gitignore), para a chave não ficar pública.

@@ -1,35 +1,5 @@
 {
-  "aviso": "Catálogo de demonstração, usado quando o TMDB ainda não foi importado. Durações aproximadas e disponibilidade por plataforma ilustrativas.",
-  "plataformas": [
-    {
-      "nome": "Netflix",
-      "cor": "#C47F86"
-    },
-    {
-      "nome": "Prime Video",
-      "cor": "#5E9E9B"
-    },
-    {
-      "nome": "Disney+",
-      "cor": "#7F98BE"
-    },
-    {
-      "nome": "HBO Max",
-      "cor": "#A08CC4"
-    },
-    {
-      "nome": "Globoplay",
-      "cor": "#D0A061"
-    },
-    {
-      "nome": "Apple TV+",
-      "cor": "#A8A49C"
-    },
-    {
-      "nome": "Paramount+",
-      "cor": "#8FAE87"
-    }
-  ],
+  "aviso": "Catálogo de demonstração, usado enquanto o TMDB não foi importado. Durações aproximadas e disponibilidade ilustrativa. As plataformas ficam em data/plataformas.json.",
   "titulos": [
     {
       "titulo": "Brooklyn Nine-Nine",
@@ -42,7 +12,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Um detetive brincalhão e sua equipe resolvem crimes numa delegacia de Nova York comandada por um capitão sério."
+      "sinopse": "Um detetive brincalhão e sua equipe resolvem crimes numa delegacia de Nova York comandada por um capitão sério.",
+      "idioma": "en"
     },
     {
       "titulo": "The Office",
@@ -55,7 +26,8 @@
       "plataformas": [
         "Prime Video"
       ],
-      "sinopse": "Documentário fictício sobre o dia a dia constrangedor de um escritório de papel e seu gerente sem noção."
+      "sinopse": "Documentário fictício sobre o dia a dia constrangedor de um escritório de papel e seu gerente sem noção.",
+      "idioma": "en"
     },
     {
       "titulo": "Friends",
@@ -68,7 +40,8 @@
       "plataformas": [
         "HBO Max"
       ],
-      "sinopse": "Seis amigos dividem apartamentos, cafés e confusões amorosas em Manhattan."
+      "sinopse": "Seis amigos dividem apartamentos, cafés e confusões amorosas em Manhattan.",
+      "idioma": "en"
     },
     {
       "titulo": "Ted Lasso",
@@ -81,7 +54,8 @@
       "plataformas": [
         "Apple TV+"
       ],
-      "sinopse": "Um técnico de futebol americano otimista é contratado para treinar um time de futebol inglês."
+      "sinopse": "Um técnico de futebol americano otimista é contratado para treinar um time de futebol inglês.",
+      "idioma": "en"
     },
     {
       "titulo": "Modern Family",
@@ -94,7 +68,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "Três núcleos de uma mesma família mostram as alegrias e os desastres da vida doméstica."
+      "sinopse": "Três núcleos de uma mesma família mostram as alegrias e os desastres da vida doméstica.",
+      "idioma": "en"
     },
     {
       "titulo": "Os Simpsons",
@@ -107,7 +82,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "As aventuras absurdas de uma família amarela de Springfield."
+      "sinopse": "As aventuras absurdas de uma família amarela de Springfield.",
+      "idioma": "en"
     },
     {
       "titulo": "Bluey",
@@ -120,7 +96,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "Uma cachorrinha cheia de imaginação transforma o cotidiano da família em brincadeira."
+      "sinopse": "Uma cachorrinha cheia de imaginação transforma o cotidiano da família em brincadeira.",
+      "idioma": "en"
     },
     {
       "titulo": "Wandinha",
@@ -133,7 +110,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "A filha sombria da Família Addams investiga mistérios em um colégio para jovens peculiares."
+      "sinopse": "A filha sombria da Família Addams investiga mistérios em um colégio para jovens peculiares.",
+      "idioma": "en"
     },
     {
       "titulo": "Stranger Things",
@@ -146,7 +124,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Amigos de uma pequena cidade enfrentam forças sobrenaturais após o sumiço de um garoto."
+      "sinopse": "Amigos de uma pequena cidade enfrentam forças sobrenaturais após o sumiço de um garoto.",
+      "idioma": "en"
     },
     {
       "titulo": "Dark",
@@ -159,7 +138,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "O desaparecimento de crianças revela segredos de quatro famílias ligados a viagens no tempo."
+      "sinopse": "O desaparecimento de crianças revela segredos de quatro famílias ligados a viagens no tempo.",
+      "idioma": "de"
     },
     {
       "titulo": "Round 6",
@@ -172,7 +152,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Pessoas endividadas aceitam participar de jogos infantis com prêmios milionários e regras mortais."
+      "sinopse": "Pessoas endividadas aceitam participar de jogos infantis com prêmios milionários e regras mortais.",
+      "idioma": "ko"
     },
     {
       "titulo": "The Last of Us",
@@ -185,7 +166,8 @@
       "plataformas": [
         "HBO Max"
       ],
-      "sinopse": "Um sobrevivente endurecido escolta uma adolescente por um país devastado por uma pandemia."
+      "sinopse": "Um sobrevivente endurecido escolta uma adolescente por um país devastado por uma pandemia.",
+      "idioma": "en"
     },
     {
       "titulo": "Succession",
@@ -198,7 +180,8 @@
       "plataformas": [
         "HBO Max"
       ],
-      "sinopse": "Os filhos de um magnata da mídia disputam o controle do império da família."
+      "sinopse": "Os filhos de um magnata da mídia disputam o controle do império da família.",
+      "idioma": "en"
     },
     {
       "titulo": "Ruptura",
@@ -211,7 +194,8 @@
       "plataformas": [
         "Apple TV+"
       ],
-      "sinopse": "Funcionários têm as memórias do trabalho separadas das da vida pessoal por um procedimento cirúrgico."
+      "sinopse": "Funcionários têm as memórias do trabalho separadas das da vida pessoal por um procedimento cirúrgico.",
+      "idioma": "en"
     },
     {
       "titulo": "The Boys",
@@ -224,7 +208,8 @@
       "plataformas": [
         "Prime Video"
       ],
-      "sinopse": "Um grupo de vigilantes enfrenta super-heróis corruptos e celebridades da indústria."
+      "sinopse": "Um grupo de vigilantes enfrenta super-heróis corruptos e celebridades da indústria.",
+      "idioma": "en"
     },
     {
       "titulo": "Reacher",
@@ -237,7 +222,8 @@
       "plataformas": [
         "Prime Video"
       ],
-      "sinopse": "Um ex-policial militar andarilho se envolve na investigação de uma conspiração numa cidade pequena."
+      "sinopse": "Um ex-policial militar andarilho se envolve na investigação de uma conspiração numa cidade pequena.",
+      "idioma": "en"
     },
     {
       "titulo": "O Urso",
@@ -250,7 +236,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "Um chef premiado volta para casa para tocar a lanchonete caótica da família."
+      "sinopse": "Um chef premiado volta para casa para tocar a lanchonete caótica da família.",
+      "idioma": "en"
     },
     {
       "titulo": "This Is Us",
@@ -264,7 +251,8 @@
         "Disney+",
         "Prime Video"
       ],
-      "sinopse": "A história de uma família contada em diferentes épocas, unindo perdas, amores e reencontros."
+      "sinopse": "A história de uma família contada em diferentes épocas, unindo perdas, amores e reencontros.",
+      "idioma": "en"
     },
     {
       "titulo": "Heartstopper",
@@ -277,7 +265,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Dois colegas de escola descobrem que a amizade entre eles está virando algo maior."
+      "sinopse": "Dois colegas de escola descobrem que a amizade entre eles está virando algo maior.",
+      "idioma": "en"
     },
     {
       "titulo": "Gilmore Girls",
@@ -290,7 +279,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Mãe e filha muito unidas vivem numa cidadezinha cheia de personagens excêntricos."
+      "sinopse": "Mãe e filha muito unidas vivem numa cidadezinha cheia de personagens excêntricos.",
+      "idioma": "en"
     },
     {
       "titulo": "Avenida Brasil",
@@ -303,7 +293,8 @@
       "plataformas": [
         "Globoplay"
       ],
-      "sinopse": "Uma jovem volta ao bairro de infância decidida a se vingar da madrasta que a abandonou num lixão."
+      "sinopse": "Uma jovem volta ao bairro de infância decidida a se vingar da madrasta que a abandonou num lixão.",
+      "idioma": "pt"
     },
     {
       "titulo": "Sob Pressão",
@@ -316,7 +307,8 @@
       "plataformas": [
         "Globoplay"
       ],
-      "sinopse": "Médicos de um hospital público do Rio lutam para salvar vidas com poucos recursos."
+      "sinopse": "Médicos de um hospital público do Rio lutam para salvar vidas com poucos recursos.",
+      "idioma": "pt"
     },
     {
       "titulo": "Cidade Invisível",
@@ -329,7 +321,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Um policial ambiental descobre criaturas do folclore brasileiro vivendo escondidas no Rio."
+      "sinopse": "Um policial ambiental descobre criaturas do folclore brasileiro vivendo escondidas no Rio.",
+      "idioma": "pt"
     },
     {
       "titulo": "Only Murders in the Building",
@@ -342,7 +335,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "Três vizinhos fãs de podcasts de crime investigam uma morte no prédio onde moram."
+      "sinopse": "Três vizinhos fãs de podcasts de crime investigam uma morte no prédio onde moram.",
+      "idioma": "en"
     },
     {
       "titulo": "Yellowstone",
@@ -355,7 +349,8 @@
       "plataformas": [
         "Paramount+"
       ],
-      "sinopse": "Uma família de rancheiros enfrenta disputas de terra com vizinhos, empresas e uma reserva indígena."
+      "sinopse": "Uma família de rancheiros enfrenta disputas de terra com vizinhos, empresas e uma reserva indígena.",
+      "idioma": "en"
     },
     {
       "titulo": "Bob Esponja",
@@ -368,7 +363,8 @@
       "plataformas": [
         "Paramount+"
       ],
-      "sinopse": "Uma esponja otimista vive confusões no fundo do mar com seus amigos da Fenda do Biquíni."
+      "sinopse": "Uma esponja otimista vive confusões no fundo do mar com seus amigos da Fenda do Biquíni.",
+      "idioma": "en"
     },
     {
       "titulo": "Coco",
@@ -381,7 +377,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "Um garoto apaixonado por música vai parar na Terra dos Mortos durante o Dia de Finados mexicano."
+      "sinopse": "Um garoto apaixonado por música vai parar na Terra dos Mortos durante o Dia de Finados mexicano.",
+      "idioma": "en"
     },
     {
       "titulo": "Divertida Mente",
@@ -394,7 +391,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "As emoções de uma menina tentam ajudá-la a se adaptar a uma mudança de cidade."
+      "sinopse": "As emoções de uma menina tentam ajudá-la a se adaptar a uma mudança de cidade.",
+      "idioma": "en"
     },
     {
       "titulo": "Divertida Mente 2",
@@ -407,7 +405,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "Na adolescência, novas emoções chegam à mente de Riley e bagunçam a sala de controle."
+      "sinopse": "Na adolescência, novas emoções chegam à mente de Riley e bagunçam a sala de controle.",
+      "idioma": "en"
     },
     {
       "titulo": "Up: Altas Aventuras",
@@ -420,7 +419,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "Um viúvo amarra balões à casa para realizar uma viagem prometida e ganha um companheiro inesperado."
+      "sinopse": "Um viúvo amarra balões à casa para realizar uma viagem prometida e ganha um companheiro inesperado.",
+      "idioma": "en"
     },
     {
       "titulo": "Toy Story",
@@ -433,7 +433,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "Os brinquedos de um menino ganham vida quando ninguém está olhando, e um novo astronauta muda tudo."
+      "sinopse": "Os brinquedos de um menino ganham vida quando ninguém está olhando, e um novo astronauta muda tudo.",
+      "idioma": "en"
     },
     {
       "titulo": "Encanto",
@@ -446,7 +447,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "A única integrante sem poderes de uma família mágica colombiana tenta salvar a casa encantada."
+      "sinopse": "A única integrante sem poderes de uma família mágica colombiana tenta salvar a casa encantada.",
+      "idioma": "en"
     },
     {
       "titulo": "Shrek",
@@ -460,7 +462,8 @@
         "Netflix",
         "Prime Video"
       ],
-      "sinopse": "Um ogro mal-humorado parte para resgatar uma princesa e recuperar a paz do seu pântano."
+      "sinopse": "Um ogro mal-humorado parte para resgatar uma princesa e recuperar a paz do seu pântano.",
+      "idioma": "en"
     },
     {
       "titulo": "As Branquelas",
@@ -473,7 +476,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Dois agentes do FBI se disfarçam de herdeiras ricas para evitar um sequestro."
+      "sinopse": "Dois agentes do FBI se disfarçam de herdeiras ricas para evitar um sequestro.",
+      "idioma": "en"
     },
     {
       "titulo": "Minha Mãe é uma Peça",
@@ -487,7 +491,8 @@
         "Globoplay",
         "Prime Video"
       ],
-      "sinopse": "Uma mãe exagerada sai de casa após uma briga com os filhos e conta suas histórias à tia."
+      "sinopse": "Uma mãe exagerada sai de casa após uma briga com os filhos e conta suas histórias à tia.",
+      "idioma": "pt"
     },
     {
       "titulo": "O Auto da Compadecida",
@@ -500,7 +505,8 @@
       "plataformas": [
         "Globoplay"
       ],
-      "sinopse": "Dois nordestinos espertos aplicam golpes no sertão até enfrentarem um julgamento divino."
+      "sinopse": "Dois nordestinos espertos aplicam golpes no sertão até enfrentarem um julgamento divino.",
+      "idioma": "pt"
     },
     {
       "titulo": "Se Beber, Não Case!",
@@ -513,7 +519,8 @@
       "plataformas": [
         "HBO Max"
       ],
-      "sinopse": "Amigos acordam em Las Vegas sem lembrar da noite anterior e sem o noivo."
+      "sinopse": "Amigos acordam em Las Vegas sem lembrar da noite anterior e sem o noivo.",
+      "idioma": "en"
     },
     {
       "titulo": "Barbie",
@@ -526,7 +533,8 @@
       "plataformas": [
         "HBO Max"
       ],
-      "sinopse": "A boneca mais famosa do mundo deixa seu mundo perfeito e descobre a vida real."
+      "sinopse": "A boneca mais famosa do mundo deixa seu mundo perfeito e descobre a vida real.",
+      "idioma": "en"
     },
     {
       "titulo": "Glass Onion",
@@ -539,7 +547,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Um detetive excêntrico investiga um jogo de assassinato numa ilha particular de um bilionário."
+      "sinopse": "Um detetive excêntrico investiga um jogo de assassinato numa ilha particular de um bilionário.",
+      "idioma": "en"
     },
     {
       "titulo": "Entre Facas e Segredos",
@@ -552,7 +561,8 @@
       "plataformas": [
         "Prime Video"
       ],
-      "sinopse": "A morte de um escritor rico coloca toda a família sob suspeita."
+      "sinopse": "A morte de um escritor rico coloca toda a família sob suspeita.",
+      "idioma": "en"
     },
     {
       "titulo": "Garota Exemplar",
@@ -565,7 +575,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "O sumiço de uma mulher transforma o marido no principal suspeito diante da mídia."
+      "sinopse": "O sumiço de uma mulher transforma o marido no principal suspeito diante da mídia.",
+      "idioma": "en"
     },
     {
       "titulo": "Corra!",
@@ -579,7 +590,8 @@
         "Netflix",
         "Prime Video"
       ],
-      "sinopse": "Um jovem visita a família da namorada e percebe que algo muito estranho acontece na casa."
+      "sinopse": "Um jovem visita a família da namorada e percebe que algo muito estranho acontece na casa.",
+      "idioma": "en"
     },
     {
       "titulo": "Um Lugar Silencioso",
@@ -593,7 +605,8 @@
         "Paramount+",
         "Prime Video"
       ],
-      "sinopse": "Uma família sobrevive em silêncio absoluto num mundo dominado por criaturas que caçam pelo som."
+      "sinopse": "Uma família sobrevive em silêncio absoluto num mundo dominado por criaturas que caçam pelo som.",
+      "idioma": "en"
     },
     {
       "titulo": "Parasita",
@@ -606,7 +619,8 @@
       "plataformas": [
         "HBO Max"
       ],
-      "sinopse": "Uma família pobre se infiltra, um a um, nos empregos da casa de uma família rica."
+      "sinopse": "Uma família pobre se infiltra, um a um, nos empregos da casa de uma família rica.",
+      "idioma": "ko"
     },
     {
       "titulo": "Ilha do Medo",
@@ -619,7 +633,8 @@
       "plataformas": [
         "Paramount+"
       ],
-      "sinopse": "Um agente federal investiga o sumiço de uma paciente num hospital psiquiátrico isolado."
+      "sinopse": "Um agente federal investiga o sumiço de uma paciente num hospital psiquiátrico isolado.",
+      "idioma": "en"
     },
     {
       "titulo": "Duna",
@@ -632,7 +647,8 @@
       "plataformas": [
         "HBO Max"
       ],
-      "sinopse": "O herdeiro de uma família nobre é enviado ao planeta desértico mais perigoso do universo."
+      "sinopse": "O herdeiro de uma família nobre é enviado ao planeta desértico mais perigoso do universo.",
+      "idioma": "en"
     },
     {
       "titulo": "Interestelar",
@@ -646,7 +662,8 @@
         "Prime Video",
         "Paramount+"
       ],
-      "sinopse": "Astronautas atravessam um buraco de minhoca em busca de um novo lar para a humanidade."
+      "sinopse": "Astronautas atravessam um buraco de minhoca em busca de um novo lar para a humanidade.",
+      "idioma": "en"
     },
     {
       "titulo": "Oppenheimer",
@@ -659,7 +676,8 @@
       "plataformas": [
         "Prime Video"
       ],
-      "sinopse": "A trajetória do físico que liderou o projeto da primeira bomba atômica."
+      "sinopse": "A trajetória do físico que liderou o projeto da primeira bomba atômica.",
+      "idioma": "en"
     },
     {
       "titulo": "Ainda Estou Aqui",
@@ -672,7 +690,8 @@
       "plataformas": [
         "Globoplay"
       ],
-      "sinopse": "Uma mãe reconstrói a vida da família após o desaparecimento do marido durante a ditadura."
+      "sinopse": "Uma mãe reconstrói a vida da família após o desaparecimento do marido durante a ditadura.",
+      "idioma": "pt"
     },
     {
       "titulo": "Central do Brasil",
@@ -685,7 +704,8 @@
       "plataformas": [
         "Globoplay"
       ],
-      "sinopse": "Uma escrevedora de cartas acompanha um menino pelo sertão em busca do pai dele."
+      "sinopse": "Uma escrevedora de cartas acompanha um menino pelo sertão em busca do pai dele.",
+      "idioma": "pt"
     },
     {
       "titulo": "Extraordinário",
@@ -698,7 +718,8 @@
       "plataformas": [
         "Prime Video"
       ],
-      "sinopse": "Um menino com uma síndrome facial frequenta a escola pela primeira vez."
+      "sinopse": "Um menino com uma síndrome facial frequenta a escola pela primeira vez.",
+      "idioma": "en"
     },
     {
       "titulo": "À Procura da Felicidade",
@@ -711,7 +732,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Um pai sem dinheiro e sem casa luta por uma vaga de estágio enquanto cuida do filho."
+      "sinopse": "Um pai sem dinheiro e sem casa luta por uma vaga de estágio enquanto cuida do filho.",
+      "idioma": "en"
     },
     {
       "titulo": "Como Eu Era Antes de Você",
@@ -724,7 +746,8 @@
       "plataformas": [
         "HBO Max"
       ],
-      "sinopse": "Uma jovem cuidadora transforma a vida de um homem que ficou tetraplégico após um acidente."
+      "sinopse": "Uma jovem cuidadora transforma a vida de um homem que ficou tetraplégico após um acidente.",
+      "idioma": "en"
     },
     {
       "titulo": "Questão de Tempo",
@@ -737,7 +760,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Um jovem descobre que pode voltar no tempo e usa o dom para conquistar o amor da sua vida."
+      "sinopse": "Um jovem descobre que pode voltar no tempo e usa o dom para conquistar o amor da sua vida.",
+      "idioma": "en"
     },
     {
       "titulo": "La La Land",
@@ -750,7 +774,8 @@
       "plataformas": [
         "Prime Video"
       ],
-      "sinopse": "Um pianista e uma aspirante a atriz se apaixonam enquanto perseguem seus sonhos em Los Angeles."
+      "sinopse": "Um pianista e uma aspirante a atriz se apaixonam enquanto perseguem seus sonhos em Los Angeles.",
+      "idioma": "en"
     },
     {
       "titulo": "Orgulho e Preconceito",
@@ -764,7 +789,8 @@
         "Netflix",
         "Prime Video"
       ],
-      "sinopse": "Elizabeth Bennet e o orgulhoso Sr. Darcy se desentendem até descobrirem o que sentem."
+      "sinopse": "Elizabeth Bennet e o orgulhoso Sr. Darcy se desentendem até descobrirem o que sentem.",
+      "idioma": "en"
     },
     {
       "titulo": "O Diabo Veste Prada",
@@ -777,7 +803,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "Uma jornalista recém-formada vira assistente da editora mais temida do mundo da moda."
+      "sinopse": "Uma jornalista recém-formada vira assistente da editora mais temida do mundo da moda.",
+      "idioma": "en"
     },
     {
       "titulo": "Mamma Mia!",
@@ -790,7 +817,8 @@
       "plataformas": [
         "Prime Video"
       ],
-      "sinopse": "Às vésperas do casamento, uma noiva convida três homens que podem ser seu pai para uma ilha grega."
+      "sinopse": "Às vésperas do casamento, uma noiva convida três homens que podem ser seu pai para uma ilha grega.",
+      "idioma": "en"
     },
     {
       "titulo": "Chef",
@@ -803,7 +831,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Um chef demitido monta um food truck e cruza o país com o filho reconstruindo a carreira."
+      "sinopse": "Um chef demitido monta um food truck e cruza o país com o filho reconstruindo a carreira.",
+      "idioma": "en"
     },
     {
       "titulo": "Paddington 2",
@@ -816,7 +845,8 @@
       "plataformas": [
         "Prime Video"
       ],
-      "sinopse": "O ursinho mais educado de Londres é acusado injustamente de um roubo e vai parar na prisão."
+      "sinopse": "O ursinho mais educado de Londres é acusado injustamente de um roubo e vai parar na prisão.",
+      "idioma": "en"
     },
     {
       "titulo": "Moana",
@@ -829,7 +859,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "Uma jovem navegadora atravessa o oceano com um semideus para salvar sua ilha."
+      "sinopse": "Uma jovem navegadora atravessa o oceano com um semideus para salvar sua ilha.",
+      "idioma": "en"
     },
     {
       "titulo": "O Senhor dos Anéis: A Sociedade do Anel",
@@ -843,7 +874,8 @@
         "HBO Max",
         "Prime Video"
       ],
-      "sinopse": "Um hobbit parte numa jornada para destruir um anel que pode escravizar a Terra-média."
+      "sinopse": "Um hobbit parte numa jornada para destruir um anel que pode escravizar a Terra-média.",
+      "idioma": "en"
     },
     {
       "titulo": "Homem-Aranha no Aranhaverso",
@@ -856,7 +888,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Um adolescente do Brooklyn vira Homem-Aranha e conhece versões do herói de outras dimensões."
+      "sinopse": "Um adolescente do Brooklyn vira Homem-Aranha e conhece versões do herói de outras dimensões.",
+      "idioma": "en"
     },
     {
       "titulo": "Top Gun: Maverick",
@@ -869,7 +902,8 @@
       "plataformas": [
         "Paramount+"
       ],
-      "sinopse": "Um piloto veterano treina uma nova geração para uma missão quase impossível."
+      "sinopse": "Um piloto veterano treina uma nova geração para uma missão quase impossível.",
+      "idioma": "en"
     },
     {
       "titulo": "Tudo em Todo o Lugar ao Mesmo Tempo",
@@ -882,7 +916,8 @@
       "plataformas": [
         "Prime Video"
       ],
-      "sinopse": "Uma dona de lavanderia descobre que precisa salvar o multiverso enquanto resolve problemas de família."
+      "sinopse": "Uma dona de lavanderia descobre que precisa salvar o multiverso enquanto resolve problemas de família.",
+      "idioma": "en"
     },
     {
       "titulo": "Wall-E",
@@ -895,7 +930,8 @@
       "plataformas": [
         "Disney+"
       ],
-      "sinopse": "Um robozinho solitário que limpa a Terra se apaixona por uma robô exploradora."
+      "sinopse": "Um robozinho solitário que limpa a Terra se apaixona por uma robô exploradora.",
+      "idioma": "en"
     },
     {
       "titulo": "Our Planet",
@@ -908,7 +944,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Série documental que mostra a vida selvagem nos diferentes ecossistemas do planeta."
+      "sinopse": "Série documental que mostra a vida selvagem nos diferentes ecossistemas do planeta.",
+      "idioma": "en"
     },
     {
       "titulo": "Chef's Table",
@@ -921,7 +958,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Cada episódio acompanha a história e a cozinha de um chef renomado."
+      "sinopse": "Cada episódio acompanha a história e a cozinha de um chef renomado.",
+      "idioma": "en"
     },
     {
       "titulo": "The Great British Bake Off",
@@ -934,7 +972,8 @@
       "plataformas": [
         "Netflix"
       ],
-      "sinopse": "Confeiteiros amadores competem em provas de bolos, pães e doces."
+      "sinopse": "Confeiteiros amadores competem em provas de bolos, pães e doces.",
+      "idioma": "en"
     }
   ]
 }

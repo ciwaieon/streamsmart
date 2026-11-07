@@ -11,18 +11,34 @@
       <span>{{ 'Série' if t.tipo == 'serie' else 'Filme' }}{% if t.ano %}, {{ t.ano }}{% endif %}</span>
       <span>{{ (t.duracao_min|duracao) ~ (' por episódio' if t.tipo == 'serie' else '') }}</span>
       {{ classif(t.classificacao) }}
-      {% if t.nota_tmdb %}<span title="Nota média no TMDB">TMDB {{ t.nota_tmdb|decimal }}</span>{% endif %}
+      {% if t.nota_tmdb %}<span title="Nota média do público (0 a 10)">Nota {{ t.nota_tmdb|decimal }}</span>{% endif %}
       {% if media_amigos %}<span class="estrelas" title="Média dos seus amigos">{{ media_amigos|estrelas }}</span>{% endif %}
     </div>
     <p class="suave">{{ t.generos|map('capitalize')|join(', ') }}</p>
+    {% include "_audio.html" %}
     <p class="sinopse">{{ t.sinopse }}</p>
 
-    <div class="lista-plataformas">
+    {% if t.plataformas %}
+    <ul class="onde-assistir" aria-label="Onde assistir">
       {% for p in t.plataformas %}
-      <span class="plat {{ 'minha' if p.nome in assinadas }}"><span class="ponto" style="background: {{ p.cor }}"></span>{{ p.nome }}{{ ', no seu plano' if p.nome in assinadas }}</span>
-      {% else %}<span class="suave">Sem plataforma de assinatura no Brasil no momento.</span>
+      <li class="{{ 'minha' if p.nome in assinadas }}" style="--cor: {{ p.cor }}">
+        <span class="onde-nome"><strong>{{ p.nome }}</strong>{% if p.nome in assinadas %}<small>no seu plano</small>{% endif %}</span>
+        {% if p.fonte == 'streaming' %}
+          <span class="onde-info">
+            <span class="{{ 'sim' if p.dublado else 'nao' }}">{{ 'Dublado' if p.dublado else 'Sem dublagem' }}</span>
+            <span class="{{ 'sim' if p.legendado else 'nao' }}">{{ 'Legendado' if p.legendado else 'Sem legenda em PT' }}</span>
+            {% if p.qualidade %}<span>{{ {'sd': 'SD', 'hd': 'HD', 'qhd': 'Full HD', 'uhd': '4K'}.get(p.qualidade, p.qualidade|upper) }}</span>{% endif %}
+            {% if p.expira_em %}<span class="sai">Sai do catálogo em {{ p.expira_em|data_br }}</span>{% endif %}
+          </span>
+          {% if p.link %}<a class="botao botao-pequeno botao-linha" href="{{ p.link }}" target="_blank" rel="noopener">Abrir {{ 'na' if p.nome in ('Netflix', 'HBO Max', 'Apple TV+') else 'no' }} {{ p.nome }}</a>{% endif %}
+        {% else %}
+          <span class="onde-info"><span class="nao">Áudio e legenda não informados pela plataforma</span></span>
+        {% endif %}
+      </li>
       {% endfor %}
-    </div>
+    </ul>
+    {% else %}<p class="suave">Sem plataforma de assinatura no Brasil no momento.</p>
+    {% endif %}
 
     {% if t.plataformas %}
     <form method="post" action="{{ url_for('historico') }}" class="opcoes" style="align-items:center;gap:.6rem">
@@ -30,6 +46,10 @@
       <input type="hidden" name="voltar" value="{{ url_for('titulo', tid=t.id) }}">
       <select name="plataforma_id" aria-label="Plataforma em que assistiu" style="width:auto">
         {% for p in t.plataformas %}<option value="{{ p.id }}" {{ 'selected' if p.nome in assinadas }}>{{ p.nome }}</option>{% endfor %}
+      </select>
+      <select name="audio" aria-label="Como você assistiu" style="width:auto">
+        {% if t.idioma_original == 'pt' %}<option value="original">Áudio original (português)</option>
+        {% else %}<option value="dublado">Dublado</option><option value="legendado">Legendado</option><option value="original">Áudio original, sem legenda</option>{% endif %}
       </select>
       <button class="botao botao-claro" type="submit">Marcar como assistido hoje</button>
       {% if vezes %}<span class="suave pequeno">Você já registrou {{ vezes|length }} vez{{ 'es' if vezes|length > 1 }}, a última em {{ vezes[0].data|data_br }}.</span>{% endif %}

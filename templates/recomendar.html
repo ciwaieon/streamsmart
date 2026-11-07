@@ -2,12 +2,12 @@
 {% from "_macros.html" import capa, classif %}
 {% block titulo %}O que assistir{% endblock %}
 {% block conteudo %}
-{% set avancados = filtros.categorias|length + filtros.plataformas|length + (1 if filtros.tipo != 'todos' else 0) + (1 if filtros.classificacao_max != '18' else 0) %}
+{% set avancados = filtros.categorias|length + filtros.plataformas|length + filtros.idiomas|length + filtros.audio|length + (1 if filtros.tipo != 'todos' else 0) + (1 if filtros.classificacao_max != '18' else 0) %}
 <div class="topo-pagina">
   <div>
     <h1>O que assistir hoje</h1>
-    <p>{% if catalogo.tmdb %}{{ '{:,}'.format(catalogo.total).replace(',', '.') }} filmes e séries do TMDB.
-      {% else %}Catálogo de demonstração com {{ catalogo.total }} títulos. <a href="{{ url_for('catalogo') }}">Importe o TMDB</a> para ter milhares.{% endif %}</p>
+    <p>{{ '{:,}'.format(catalogo.total).replace(',', '.') }} filmes e séries em {{ plataformas|length }} plataformas disponíveis no Brasil{% if catalogo.streaming %}, {{ '{:,}'.format(catalogo.streaming).replace(',', '.') }} conferidos no catálogo oficial dos streamings, com áudio e legenda{% endif %}.
+      {% if importacao.situacao == 'importando' or importacao.streaming.situacao == 'importando' %}<span class="importando">Atualizando os catálogos agora. Os novos títulos aparecem conforme chegam.</span>{% endif %}</p>
   </div>
 </div>
 
@@ -54,6 +54,21 @@
         <div class="opcoes">
           {% for c in lista_categorias %}
           <label class="opcao"><input type="checkbox" name="categoria" value="{{ c }}" {{ 'checked' if c in filtros.categorias }}><span>{{ c|capitalize }}</span></label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="grupo-filtro">
+        <span class="titulo-filtro">Áudio e legenda</span>
+        <div class="opcoes">
+          <label class="opcao"><input type="checkbox" name="audio" value="dublado" {{ 'checked' if 'dublado' in filtros.audio }}><span>Tem dublagem em português</span></label>
+          <label class="opcao"><input type="checkbox" name="audio" value="legendado" {{ 'checked' if 'legendado' in filtros.audio }}><span>Tem legenda em português</span></label>
+        </div>
+      </div>
+      <div class="grupo-filtro">
+        <span class="titulo-filtro">Idioma original<small>Vazio = todos</small></span>
+        <div class="opcoes">
+          {% for chave, rotulo in idiomas %}
+          <label class="opcao"><input type="checkbox" name="idioma" value="{{ chave }}" {{ 'checked' if chave in filtros.idiomas }}><span>{{ rotulo }}</span></label>
           {% endfor %}
         </div>
       </div>
@@ -132,7 +147,14 @@
         </div>
         {% set extras = t.motivos[1:] if t.no_plano else t.motivos %}
         {% if extras %}<span class="motivo">{{ extras[0] }}</span>{% endif %}
-        <span class="selo {{ 'selo-plano' if t.no_plano else 'selo-fora' }}">{{ 'No seu plano' if t.no_plano else 'Fora da sua assinatura' }}</span>
+        <span class="audios">
+          <span class="selo {{ 'selo-plano' if t.no_plano else 'selo-fora' }}">{{ 'No seu plano' if t.no_plano else 'Fora do plano' }}</span>
+          {% if t.idioma_original == 'pt' %}<span class="selo selo-teste">Nacional</span>
+          {% else %}
+            {% if t.tem_dublado %}<span class="selo selo-teste" title="{{ 'Informado pelo catálogo do streaming' if t.tem_dublado == True else 'Confirmado por quem assistiu' }}">Dublado</span>{% endif %}
+            {% if t.tem_legenda %}<span class="selo selo-teste" title="{{ 'Informado pelo catálogo do streaming' if t.tem_legenda == True else 'Confirmado por quem assistiu' }}">Legendado</span>{% endif %}
+          {% endif %}
+        </span>
       </a>
       {% endfor %}
     </div>

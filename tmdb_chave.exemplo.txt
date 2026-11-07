@@ -1,0 +1,3 @@
+# Copie este arquivo com o nome tmdb_chave.txt e cole a chave do TMDB na linha abaixo (sem o #).
+# Pode ser a "Chave da API" (v3) ou o "Token de leitura da API" (v4).
+# O arquivo tmdb_chave.txt fica fora do GitHub (está no .gitignore), para a chave não ficar pública.

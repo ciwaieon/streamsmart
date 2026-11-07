@@ -1,0 +1,231 @@
+{
+  "aviso": "Plataformas de streaming disponíveis no Brasil. 'ids_streaming' são os identificadores na Streaming Availability API; 'nomes_tmdb' são os nomes na lista de provedores do TMDB/JustWatch (sem acento, minúsculas). Serviços novos que a Streaming Availability API cobrir no Brasil entram sozinhos.",
+  "plataformas": [
+    {
+      "nome": "Netflix",
+      "cor": "#C47F86",
+      "nomes_tmdb": [
+        "netflix"
+      ],
+      "ids_streaming": [
+        "netflix"
+      ]
+    },
+    {
+      "nome": "Prime Video",
+      "cor": "#5E9E9B",
+      "nomes_tmdb": [
+        "amazon prime video",
+        "prime video"
+      ],
+      "ids_streaming": [
+        "prime"
+      ]
+    },
+    {
+      "nome": "Disney+",
+      "cor": "#7F98BE",
+      "nomes_tmdb": [
+        "disney plus",
+        "disney+"
+      ],
+      "ids_streaming": [
+        "disney"
+      ]
+    },
+    {
+      "nome": "HBO Max",
+      "cor": "#A08CC4",
+      "nomes_tmdb": [
+        "hbo max",
+        "max"
+      ],
+      "ids_streaming": [
+        "hbo",
+        "max"
+      ]
+    },
+    {
+      "nome": "Globoplay",
+      "cor": "#D0A061",
+      "nomes_tmdb": [
+        "globoplay"
+      ],
+      "ids_streaming": [
+        "globoplay"
+      ]
+    },
+    {
+      "nome": "Apple TV+",
+      "cor": "#A8A49C",
+      "nomes_tmdb": [
+        "apple tv+",
+        "apple tv plus"
+      ],
+      "ids_streaming": [
+        "apple"
+      ]
+    },
+    {
+      "nome": "Paramount+",
+      "cor": "#8FAE87",
+      "nomes_tmdb": [
+        "paramount plus",
+        "paramount+"
+      ],
+      "ids_streaming": [
+        "paramount"
+      ]
+    },
+    {
+      "nome": "Crunchyroll",
+      "cor": "#D98B5F",
+      "nomes_tmdb": [
+        "crunchyroll"
+      ],
+      "ids_streaming": [
+        "crunchyroll"
+      ]
+    },
+    {
+      "nome": "Viki",
+      "cor": "#6FA8C7",
+      "nomes_tmdb": [
+        "rakuten viki",
+        "viki"
+      ],
+      "ids_streaming": [
+        "viki"
+      ]
+    },
+    {
+      "nome": "MUBI",
+      "cor": "#9B9AA8",
+      "nomes_tmdb": [
+        "mubi"
+      ],
+      "ids_streaming": [
+        "mubi"
+      ]
+    },
+    {
+      "nome": "Telecine",
+      "cor": "#B8836E",
+      "nomes_tmdb": [
+        "telecine",
+        "telecine play"
+      ],
+      "ids_streaming": [
+        "telecine"
+      ]
+    },
+    {
+      "nome": "Discovery+",
+      "cor": "#7DA0C9",
+      "nomes_tmdb": [
+        "discovery+",
+        "discovery plus"
+      ],
+      "ids_streaming": [
+        "discovery"
+      ]
+    },
+    {
+      "nome": "Claro tv+",
+      "cor": "#B58A9E",
+      "nomes_tmdb": [
+        "claro tv+",
+        "claro tv plus",
+        "claro video",
+        "claro tv"
+      ],
+      "ids_streaming": [
+        "clarotv",
+        "claro"
+      ]
+    },
+    {
+      "nome": "Looke",
+      "cor": "#7FB3A0",
+      "nomes_tmdb": [
+        "looke"
+      ],
+      "ids_streaming": [
+        "looke"
+      ]
+    },
+    {
+      "nome": "Univer Video",
+      "cor": "#A6926B",
+      "nomes_tmdb": [
+        "univer video",
+        "univer"
+      ],
+      "ids_streaming": [
+        "univer"
+      ]
+    },
+    {
+      "nome": "iQIYI",
+      "cor": "#8FC08B",
+      "nomes_tmdb": [
+        "iqiyi"
+      ],
+      "ids_streaming": [
+        "iqiyi"
+      ]
+    },
+    {
+      "nome": "Oldflix",
+      "cor": "#B59A7A",
+      "nomes_tmdb": [
+        "oldflix"
+      ],
+      "ids_streaming": [
+        "oldflix"
+      ]
+    },
+    {
+      "nome": "Belas Artes à La Carte",
+      "cor": "#9C8FB0",
+      "nomes_tmdb": [
+        "belas artes a la carte"
+      ],
+      "ids_streaming": [
+        "belasartes"
+      ]
+    },
+    {
+      "nome": "Reserva Imovision",
+      "cor": "#8FA3B8",
+      "nomes_tmdb": [
+        "reserva imovision"
+      ],
+      "ids_streaming": [
+        "reservaimovision"
+      ]
+    },
+    {
+      "nome": "Filmicca",
+      "cor": "#A9B58B",
+      "nomes_tmdb": [
+        "filmicca"
+      ],
+      "ids_streaming": [
+        "filmicca"
+      ]
+    },
+    {
+      "nome": "Pluto TV",
+      "cor": "#C9BE7A",
+      "nomes_tmdb": [
+        "pluto tv"
+      ],
+      "gratuita": true,
+      "ids_streaming": [
+        "plutotv",
+        "pluto"
+      ]
+    }
+  ]
+}

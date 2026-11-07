@@ -9,6 +9,7 @@ Usuário de demonstração: demo@streamsmart.com / demo123
 """
 import math
 import os
+import re
 import secrets
 import sqlite3
 from datetime import date, datetime, timedelta
@@ -20,7 +21,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import database
 import repositorio as repo
 from services import categorias, custos, recomendador, relatorio
-from services.tmdb import ClienteTMDB, ErroTMDB, importar as importar_tmdb
+from services import importador
+from services.tmdb import ClienteTMDB, ErroTMDB
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("STREAMSMART_SECRET", "troque-esta-chave-em-producao")
@@ -104,8 +106,9 @@ def contexto_global():
     pedidos = 0
     if "usuario_id" in session:
         pedidos = len(repo.pedidos_recebidos(db(), session["usuario_id"]))
-    return {"usuario_nome": session.get("usuario_nome"), "ano_atual": hoje().year, "pedidos_pendentes": pedidos,
-            "classificacoes": categorias.DESCRICAO_CLASSIFICACAO}
+    return {"usuario_nome": session.get("usuario_nome"), "usuario_arroba": session.get("usuario_arroba"),
+            "ano_atual": hoje().year, "pedidos_pendentes": pedidos,
+            "classificacoes": categorias.DESCRICAO_CLASSIFICACAO, "nome_idioma": categorias.nome_idioma}
 
 
 # ------------------------------------------------------------------ autenticação (RF01)
@@ -134,12 +137,17 @@ def landing():
 def cadastro():
     if request.method == "POST":
         nome = request.form.get("nome", "").strip()
+        usuario = request.form.get("usuario", "").strip().lstrip("@").lower()
         email = request.form.get("email", "").strip().lower()
         senha = request.form.get("senha", "")
         confirmar = request.form.get("confirmar", "")
         erros = []
         if len(nome) < 2:
             erros.append("Informe seu nome.")
+        if not re.fullmatch(r"[a-z0-9_.]{3,20}", usuario):
+            erros.append("O nome de usuário deve ter de 3 a 20 caracteres: letras sem acento, números, ponto ou _.")
+        elif repo.buscar_usuario_por_usuario(db(), usuario):
+            erros.append(f"O usuário @{usuario} já existe. Escolha outro.")
         if "@" not in email or "." not in email.split("@")[-1]:
             erros.append("Informe um e-mail válido.")
         if len(senha) < 6:
@@ -151,10 +159,10 @@ def cadastro():
         if erros:
             for e in erros:
                 flash(e, "erro")
-            return render_template("cadastro.html", nome=nome, email=email), 400
-        novo_id = repo.criar_usuario(db(), nome, email, generate_password_hash(senha))
+            return render_template("cadastro.html", nome=nome, email=email, usuario=usuario), 400
+        novo_id = repo.criar_usuario(db(), nome, email, generate_password_hash(senha), usuario)
         session.clear()
-        session["usuario_id"], session["usuario_nome"] = novo_id, nome
+        session["usuario_id"], session["usuario_nome"], session["usuario_arroba"] = novo_id, nome, usuario
         flash("Conta criada! Comece cadastrando seus streamings.", "sucesso")
         return redirect(url_for("assinaturas"))
     return render_template("cadastro.html")
@@ -170,7 +178,7 @@ def login():
             flash("E-mail ou senha incorretos.", "erro")
             return render_template("login.html", email=email), 401
         session.clear()
-        session["usuario_id"], session["usuario_nome"] = usuario["id"], usuario["nome"]
+        session["usuario_id"], session["usuario_nome"], session["usuario_arroba"] = usuario["id"], usuario["nome"], usuario["usuario"]
         proximo = request.args.get("proximo", "")
         return redirect(proximo if proximo.startswith("/") and not proximo.startswith("//") else url_for("painel"))
     return render_template("login.html")
@@ -413,6 +421,8 @@ def recomendar():
         "tempo": a.get("tempo", "90"),
         "vibes": [v for v in a.getlist("vibe") if v in categorias.VIBES][:3],
         "categorias": [c for c in a.getlist("categoria") if c in categorias.CATEGORIAS],
+        "idiomas": [i for i in a.getlist("idioma") if i in dict(categorias.FILTRO_IDIOMAS)],
+        "audio": [x for x in a.getlist("audio") if x in ("dublado", "legendado")],
         "tipo": a.get("tipo", "todos"),
         "classificacao_max": a.get("classificacao", "18") if a.get("classificacao") in categorias.CLASSIFICACOES else "18",
         "companhia": a.get("companhia", "sozinho") if a.get("companhia") in recomendador.COMPANHIAS else "sozinho",
@@ -423,7 +433,18 @@ def recomendar():
     resultados, total, pagina, paginas = [], 0, 1, 1
     if buscou:
         ja_vistos = {h["titulo_id"] for h in repo.listar_historico(db(), uid())}
-        todos = recomendador.recomendar(repo.listar_catalogo(db()), filtros, assinadas, ja_vistos,
+        catalogo_completo = repo.listar_catalogo(db())
+        # onde a plataforma não informou o áudio, vale o que os usuários registraram ao assistir
+        comunidade = repo.audios_confirmados(db())
+        for t in catalogo_completo:
+            c = comunidade.get(t["id"], {})
+            if not t["tem_dublado"] and c.get("dublado"):
+                t["tem_dublado"] = "comunidade"
+            if not t["tem_legenda"] and c.get("legendado"):
+                t["tem_legenda"] = "comunidade"
+            if t.get("idioma_original") == "pt":
+                t["tem_dublado"] = t["tem_dublado"] or "nacional"
+        todos = recomendador.recomendar(catalogo_completo, filtros, assinadas, ja_vistos,
                                         repo.notas_amigos(db(), uid()))
         total = len(todos)
         paginas = max(1, math.ceil(total / POR_PAGINA))
@@ -440,6 +461,8 @@ def recomendar():
 
     return render_template(
         "recomendar.html", filtros=filtros, buscou=buscou, resultados=resultados, total=total,
+        idiomas=categorias.FILTRO_IDIOMAS,
+        importacao=importador.status(db()),
         pagina=pagina, paginas=paginas, link_pagina=link_pagina,
         tempos=categorias.TEMPOS, vibes=categorias.VIBES, lista_categorias=categorias.CATEGORIAS,
         companhias=recomendador.COMPANHIAS, tipos=recomendador.TIPOS, ordenacoes=recomendador.ORDENACOES,
@@ -461,6 +484,7 @@ def titulo(tid):
     vezes = [h for h in repo.listar_historico(db(), uid()) if h["titulo_id"] == tid]
     assinadas = {x["plataforma"] for x in repo.listar_assinaturas(db(), uid())}
     return render_template("titulo.html", t=t, minha=repo.avaliacao_do_usuario(db(), uid(), tid),
+                           audio=repo.audios_confirmados(db(), tid),
                            dos_amigos=dos_amigos, media_amigos=media, vezes=vezes, assinadas=assinadas,
                            hoje=hoje().isoformat())
 
@@ -504,17 +528,22 @@ def avaliacoes():
 @app.route("/amigos")
 @login_obrigatorio
 def amigos():
+    busca = request.args.get("busca", "").strip()
+    encontrados = repo.buscar_pessoas(db(), uid(), busca) if busca else []
+    for p in encontrados:
+        p["situacao"] = repo.situacao_amizade(db(), uid(), p["id"])
     return render_template("amigos.html", amigos=repo.listar_amigos(db(), uid()),
                            recebidos=repo.pedidos_recebidos(db(), uid()), enviados=repo.pedidos_enviados(db(), uid()),
-                           feed=repo.feed_amigos(db(), uid()))
+                           feed=repo.feed_amigos(db(), uid()), busca=busca, encontrados=encontrados)
 
 
 @app.route("/amigos/adicionar", methods=["POST"])
 @login_obrigatorio
 def adicionar_amigo():
-    ok, msg = repo.solicitar_amizade(db(), uid(), request.form.get("email", ""))
+    ok, msg = repo.solicitar_amizade(db(), uid(), request.form.get("usuario", ""))
     flash(msg, "sucesso" if ok else "erro")
-    return redirect(url_for("amigos"))
+    busca = request.form.get("busca", "")
+    return redirect(url_for("amigos", busca=busca) if busca else url_for("amigos"))
 
 
 @app.route("/amigos/pedido/<int:pid>/<acao>", methods=["POST"])
@@ -541,7 +570,7 @@ def remover_amigo(amigo_id):
 @app.route("/catalogo", methods=["GET", "POST"])
 @login_obrigatorio
 def catalogo():
-    chave = repo.ler_config(db(), "tmdb_chave") or os.environ.get("TMDB_CHAVE")
+    """Página técnica (fora do menu): mostra o andamento da importação automática do TMDB."""
     if request.method == "POST":
         if request.form.get("acao") == "salvar":
             nova = request.form.get("chave", "").strip()
@@ -551,19 +580,14 @@ def catalogo():
                 flash(str(e), "erro")
                 return redirect(url_for("catalogo"))
             repo.salvar_config(db(), "tmdb_chave", nova)
-            flash("Chave do TMDB conferida e salva. Agora é só importar o catálogo.", "sucesso")
-        elif request.form.get("acao") == "importar":
-            try:
-                paginas = min(max(int(request.form.get("paginas", 3)), 1), 25)
-                r = importar_tmdb(db(), ClienteTMDB(chave), paginas=paginas)
-                repo.salvar_config(db(), "tmdb_ultima_importacao", datetime.now().strftime("%d/%m/%Y %H:%M"))
-                flash(f"Catálogo importado: {r['novos']} títulos novos e {r['atualizados']} atualizados. "
-                      f"Agora são {r['total']} títulos ao todo.", "sucesso")
-            except (ErroTMDB, ValueError) as e:
-                flash(str(e) or "Não foi possível importar.", "erro")
+            flash("Chave conferida e salva. A importação começou em segundo plano.", "sucesso")
+        else:
+            flash("Atualização do catálogo iniciada em segundo plano.", "sucesso")
+        if not app.config.get("TESTING"):
+            importador.iniciar_em_segundo_plano(app.config.get("DATABASE"), forcar=True)
         return redirect(url_for("catalogo"))
-    return render_template("catalogo.html", tem_chave=bool(chave), contagem=repo.contar_catalogo(db()),
-                           ultima=repo.ler_config(db(), "tmdb_ultima_importacao"))
+    return render_template("catalogo.html", tem_chave=bool(importador.obter_chave(db())),
+                           contagem=repo.contar_catalogo(db()), importacao=importador.status(db()))
 
 
 # ------------------------------------------------------------------ histórico (RF07)
@@ -585,10 +609,13 @@ def historico():
             minutos = int(request.form.get("minutos") or titulo["duracao_min"])
             if minutos <= 0:
                 raise ValueError("Informe os minutos assistidos.")
+            audio = request.form.get("audio") or None
+            if audio not in (None, "dublado", "legendado", "original"):
+                raise ValueError("Escolha como você assistiu: dublado, legendado ou original.")
         except (KeyError, ValueError) as e:
             flash(str(e) if str(e) and not str(e).startswith("invalid") else "Dados inválidos.", "erro")
             return redirect(request.form.get("voltar") or url_for("historico"))
-        repo.registrar_historico(db(), uid(), titulo_id, plataforma_id, data, minutos)
+        repo.registrar_historico(db(), uid(), titulo_id, plataforma_id, data, minutos, audio)
         flash(f"“{titulo['titulo']}” entrou no seu histórico. Que tal avaliar?", "sucesso")
         voltar = request.form.get("voltar", "")
         return redirect(voltar if voltar.startswith("/") and not voltar.startswith("//") else url_for("historico"))
@@ -613,6 +640,20 @@ def relatorio_view():
     return render_template("relatorio.html", r=analise)
 
 
+_importacao_disparada = False
+
+
+@app.before_request
+def importar_catalogo_automaticamente():
+    """Na primeira requisição, confere se o catálogo do TMDB precisa ser atualizado (em segundo plano)."""
+    global _importacao_disparada
+    if not _importacao_disparada and not app.config.get("TESTING"):
+        _importacao_disparada = True
+        importador.iniciar_em_segundo_plano(app.config.get("DATABASE"))
+
+
 if __name__ == "__main__":
     database.inicializar()
+    importador.iniciar_em_segundo_plano()
+    _importacao_disparada = True
     app.run(debug=os.environ.get("FLASK_DEBUG") == "1")

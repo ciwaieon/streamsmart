@@ -33,12 +33,16 @@ def test_login_invalido(cliente):
 
 
 def test_cadastro_e_validacoes(cliente):
-    r = cliente.post("/cadastro", data={"nome": "Ana", "email": "ana@x.com", "senha": "123", "confirmar": "123"})
+    r = cliente.post("/cadastro", data={"nome": "Ana", "usuario": "ana.x", "email": "ana@x.com", "senha": "123", "confirmar": "123"})
     assert r.status_code == 400
-    r = cliente.post("/cadastro", data={"nome": "Ana", "email": "ana@x.com", "senha": "segredo1", "confirmar": "segredo1"})
+    r = cliente.post("/cadastro", data={"nome": "Ana", "usuario": "Á!", "email": "ana@x.com", "senha": "segredo1", "confirmar": "segredo1"})
+    assert "nome de usuário deve ter" in r.get_data(as_text=True)
+    r = cliente.post("/cadastro", data={"nome": "Ana", "usuario": "@Ana.X", "email": "ana@x.com", "senha": "segredo1", "confirmar": "segredo1"})
     assert r.status_code == 302
     cliente.get("/sair")
-    r = cliente.post("/cadastro", data={"nome": "Ana", "email": "ana@x.com", "senha": "segredo1", "confirmar": "segredo1"})
+    r = cliente.post("/cadastro", data={"nome": "Ana", "usuario": "ana.x", "email": "outra@x.com", "senha": "segredo1", "confirmar": "segredo1"})
+    assert "@ana.x já existe" in r.get_data(as_text=True)
+    r = cliente.post("/cadastro", data={"nome": "Ana", "usuario": "ana.y", "email": "ana@x.com", "senha": "segredo1", "confirmar": "segredo1"})
     assert "Já existe" in r.get_data(as_text=True)
 
 
@@ -86,7 +90,7 @@ def test_crud_de_assinatura(cliente):
 
 
 def test_usuario_nao_acessa_assinatura_de_outro(cliente):
-    cliente.post("/cadastro", data={"nome": "Bia", "email": "bia@x.com", "senha": "segredo1", "confirmar": "segredo1"})
+    cliente.post("/cadastro", data={"nome": "Bia", "usuario": "bia", "email": "bia@x.com", "senha": "segredo1", "confirmar": "segredo1"})
     r = cliente.get("/assinaturas/1/editar")   # assinatura do usuário demo
     assert r.status_code == 302
     cliente.post("/assinaturas/1/excluir")
@@ -138,23 +142,44 @@ def test_avaliar_titulo_e_ver_amigos(cliente):
     assert "Melhor ainda" in cliente.get("/amigos").get_data(as_text=True)
 
 
-def test_fluxo_de_amizade(cliente):
-    cliente.post("/cadastro", data={"nome": "Davi Rocha", "email": "davi@x.com", "senha": "segredo1", "confirmar": "segredo1"})
-    r = cliente.post("/amigos/adicionar", data={"email": "naoexiste@x.com"}, follow_redirects=True)
-    assert "Não existe conta" in r.get_data(as_text=True)
-    r = cliente.post("/amigos/adicionar", data={"email": "davi@x.com"}, follow_redirects=True)
-    assert "seu próprio e-mail" in r.get_data(as_text=True)
-    r = cliente.post("/amigos/adicionar", data={"email": "demo@streamsmart.com"}, follow_redirects=True)
-    assert "Pedido enviado" in r.get_data(as_text=True)
+def test_fluxo_de_amizade_por_nome_de_usuario(cliente):
+    cliente.post("/cadastro", data={"nome": "Davi Rocha", "usuario": "davi.r", "email": "davi@x.com", "senha": "segredo1", "confirmar": "segredo1"})
+    r = cliente.post("/amigos/adicionar", data={"usuario": "@ninguem"}, follow_redirects=True)
+    assert "Não encontramos ninguém com o usuário @ninguem" in r.get_data(as_text=True)
+    r = cliente.post("/amigos/adicionar", data={"usuario": "davi.r"}, follow_redirects=True)
+    assert "seu próprio usuário" in r.get_data(as_text=True)
+    # busca por parte do usuário ou do nome
+    html = cliente.get("/amigos?busca=@dem").get_data(as_text=True)
+    assert "@demo" in html and "Adicionar" in html
+    assert "@ana.souza" in cliente.get("/amigos?busca=souza").get_data(as_text=True)
+    r = cliente.post("/amigos/adicionar", data={"usuario": "@demo", "busca": "dem"}, follow_redirects=True)
+    assert "Pedido enviado" in r.get_data(as_text=True) and "Pedido enviado</span>" in r.get_data(as_text=True)
     cliente.get("/sair")
     entrar(cliente)
     html = cliente.get("/amigos").get_data(as_text=True)
-    assert "Davi Rocha" in html
-    pedidos = re.findall(r'/amigos/pedido/(\d+)/aceitar', html)
-    for pid in pedidos:
+    assert "Davi Rocha" in html and "@davi.r" in html
+    for pid in re.findall(r'/amigos/pedido/(\d+)/aceitar', html):
         cliente.post(f"/amigos/pedido/{pid}/aceitar")
     html = cliente.get("/amigos").get_data(as_text=True)
     assert "Davi Rocha" in html.split("Seus amigos")[1] and "Pedidos para você" not in html
+
+
+def test_audio_dublado_legendado_e_idioma(cliente):
+    entrar(cliente)
+    html = cliente.get("/historico").get_data(as_text=True)
+    tid = re.search(r'<option value="(\d+)"[^>]*>Ted Lasso</option>', html).group(1)
+    pagina = cliente.get(f"/titulo/{tid}").get_data(as_text=True)
+    assert "Áudio original: Inglês" in pagina and "1 pessoa assistiu dublado" in pagina      # a Ana assistiu dublado
+    assert "Áudio e legenda não informados pela plataforma" in pagina                        # catálogo de demonstração
+    cliente.post("/historico", data={"titulo_id": tid, "plataforma_id": "6", "minutos": "35", "audio": "legendado"})
+    pagina = cliente.get(f"/titulo/{tid}").get_data(as_text=True)
+    assert "1 pessoa assistiu legendado" in pagina
+    r = cliente.post("/historico", data={"titulo_id": tid, "plataforma_id": "6", "minutos": "35", "audio": "xyz"}, follow_redirects=True)
+    assert "Escolha como você assistiu" in r.get_data(as_text=True)
+    # filtro de idioma: só títulos nacionais
+    html = cliente.get("/recomendar?tempo=livre&companhia=sozinho&classificacao=18&idioma=pt").get_data(as_text=True)
+    assert "Central do Brasil" in html and "Stranger Things" not in html and "Nacional</span>" in html
+    assert "Round 6" in cliente.get("/recomendar?tempo=livre&companhia=sozinho&classificacao=18&idioma=ko").get_data(as_text=True)
 
 
 def test_catalogo_salva_chave_conferida(cliente, monkeypatch):
@@ -165,7 +190,7 @@ def test_catalogo_salva_chave_conferida(cliente, monkeypatch):
     assert "Chave do TMDB inválida" in r.get_data(as_text=True)
     monkeypatch.setattr(aplicacao.ClienteTMDB, "testar", lambda self: True)
     r = cliente.post("/catalogo", data={"acao": "salvar", "chave": "certa"}, follow_redirects=True)
-    assert "Chave salva e conferida" in r.get_data(as_text=True)
+    assert "Chave conferida e salva" in r.get_data(as_text=True) and "Chave configurada" in r.get_data(as_text=True)
 
 
 def test_registrar_historico_e_validacao(cliente):

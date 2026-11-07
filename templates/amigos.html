@@ -12,11 +12,36 @@
 <div class="grade-amigos">
   <div>
     <section class="folha bloco">
-      <h2>Adicionar amigo</h2>
-      <form method="post" action="{{ url_for('adicionar_amigo') }}" class="formulario">
-        <label>E-mail da pessoa no StreamSmart <input type="email" name="email" required placeholder="nome@exemplo.com"></label>
-        <button class="botao" type="submit">Enviar pedido de amizade</button>
+      <h2>Encontrar pessoas</h2>
+      <form method="get" action="{{ url_for('amigos') }}" class="busca-pessoas" role="search">
+        <span class="campo-arroba"><span aria-hidden="true">@</span>
+          <input type="search" name="busca" value="{{ busca }}" placeholder="usuário ou nome" aria-label="Buscar por nome de usuário ou nome" minlength="2" required></span>
+        <button class="botao" type="submit">Buscar</button>
       </form>
+      {% if busca %}
+        {% if encontrados %}
+        <ul class="lista-simples" style="margin-top:1rem">
+          {% for p in encontrados %}
+          <li>{{ avatar(p.nome) }}<span><strong>{{ p.nome }}</strong><br><span class="arroba">@{{ p.usuario }}</span></span>
+            <span class="fim">
+              {% if p.situacao == 'amigos' %}<span class="selo selo-manter">Amigos</span>
+              {% elif p.situacao == 'enviado' %}<span class="selo selo-teste">Pedido enviado</span>
+              {% elif p.situacao == 'recebido' %}<span class="selo selo-alerta">Quer ser seu amigo</span>
+              {% else %}
+              <form method="post" action="{{ url_for('adicionar_amigo') }}">
+                <input type="hidden" name="usuario" value="{{ p.usuario }}"><input type="hidden" name="busca" value="{{ busca }}">
+                <button class="botao botao-pequeno" type="submit">Adicionar</button>
+              </form>
+              {% endif %}
+            </span></li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="suave" style="margin-top:1rem">Ninguém encontrado com "{{ busca }}". Confira o nome de usuário com a pessoa.</p>
+        {% endif %}
+      {% else %}
+      <p class="suave pequeno" style="margin:.75rem 0 0">Seu usuário é <strong>@{{ usuario_arroba }}</strong>. Passe para os amigos te encontrarem.</p>
+      {% endif %}
     </section>
 
     {% if recebidos %}
@@ -24,7 +49,7 @@
       <h2>Pedidos para você</h2>
       <ul class="lista-simples">
         {% for p in recebidos %}
-        <li>{{ avatar(p.nome) }}<span><strong>{{ p.nome }}</strong><br><span class="suave pequeno">{{ p.email }}</span></span>
+        <li>{{ avatar(p.nome) }}<span><strong>{{ p.nome }}</strong><br><span class="arroba">@{{ p.usuario }}</span></span>
           <span class="fim">
             <form method="post" action="{{ url_for('responder_pedido', pid=p.id, acao='aceitar') }}"><button class="botao botao-pequeno" type="submit">Aceitar</button></form>
             <form method="post" action="{{ url_for('responder_pedido', pid=p.id, acao='recusar') }}"><button class="botao botao-pequeno botao-linha" type="submit">Recusar</button></form>
@@ -39,19 +64,19 @@
       {% if amigos %}
       <ul class="lista-simples">
         {% for a in amigos %}
-        <li>{{ avatar(a.nome) }}<span><strong>{{ a.nome }}</strong><br><span class="suave pequeno">{{ a.avaliacoes }} avaliaç{{ 'ões' if a.avaliacoes != 1 else 'ão' }}</span></span>
+        <li>{{ avatar(a.nome) }}<span><strong>{{ a.nome }}</strong><br><span class="arroba">@{{ a.usuario }}, {{ a.avaliacoes }} avaliaç{{ 'ões' if a.avaliacoes != 1 else 'ão' }}</span></span>
           <span class="fim"><form method="post" action="{{ url_for('remover_amigo', amigo_id=a.id) }}" onsubmit="return confirm('Desfazer a amizade com {{ a.nome }}?')">
             <button class="botao-texto" type="submit">Desfazer amizade</button></form></span></li>
         {% endfor %}
       </ul>
       {% else %}
-      <p class="suave">Você ainda não tem amigos aqui. Envie um pedido pelo e-mail da pessoa.</p>
+      <p class="suave">Você ainda não tem amigos aqui. Busque pelo nome de usuário da pessoa.</p>
       {% endif %}
       {% if enviados %}
       <h3 style="margin-top:1.25rem">Aguardando resposta</h3>
       <ul class="lista-simples">
         {% for p in enviados %}
-        <li><span>{{ p.nome }}</span><span class="fim"><form method="post" action="{{ url_for('responder_pedido', pid=p.id, acao='cancelar') }}"><button class="botao-texto" type="submit">Cancelar pedido</button></form></span></li>
+        <li><span>{{ p.nome }} <span class="arroba">@{{ p.usuario }}</span></span><span class="fim"><form method="post" action="{{ url_for('responder_pedido', pid=p.id, acao='cancelar') }}"><button class="botao-texto" type="submit">Cancelar pedido</button></form></span></li>
         {% endfor %}
       </ul>
       {% endif %}
@@ -66,7 +91,7 @@
       <li>
         <a class="mini-poster" href="{{ url_for('titulo', tid=a.titulo_id) }}">{{ capa(a, '#3A3D46') }}</a>
         <div>
-          <strong>{{ a.nome }}</strong> avaliou <a class="titulo-link" href="{{ url_for('titulo', tid=a.titulo_id) }}">{{ a.titulo }}</a>
+          <strong>{{ a.nome }}</strong> <span class="arroba">@{{ a.usuario }}</span> avaliou <a class="titulo-link" href="{{ url_for('titulo', tid=a.titulo_id) }}">{{ a.titulo }}</a>
           <div class="estrelas" aria-label="{{ a.nota }} de 5 estrelas">{{ a.nota|estrelas }}</div>
           {% if a.comentario %}<p>{{ a.comentario }}</p>{% endif %}
         </div>

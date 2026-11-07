@@ -18,6 +18,8 @@
     <label>Plataforma <select name="plataforma_id" id="sel-plataforma" required><option value="">—</option></select></label>
     <label>Data <input type="date" name="data" value="{{ hoje }}" max="{{ hoje }}" required></label>
     <label>Minutos <input type="number" name="minutos" id="minutos" min="1" required></label>
+    <label>Áudio
+      <select name="audio"><option value="dublado">Dublado</option><option value="legendado">Legendado</option><option value="original">Original</option></select></label>
     <button class="botao" type="submit">Registrar</button>
   </form>
 </section>
@@ -27,7 +29,7 @@
   {% if historico %}
   <div class="tabela-rolagem">
   <table class="tabela">
-    <thead><tr><th>Data</th><th>Título</th><th>Plataforma</th><th>Tempo</th><th></th></tr></thead>
+    <thead><tr><th>Data</th><th>Título</th><th>Plataforma</th><th>Tempo</th><th>Áudio</th><th></th></tr></thead>
     <tbody>
     {% for h in historico %}
       <tr>
@@ -35,6 +37,7 @@
         <td><a href="{{ url_for('titulo', tid=h.titulo_id) }}">{{ h.titulo }}</a></td>
         <td><span class="ponto" style="background: {{ h.cor }};margin-right:.4rem"></span>{{ h.plataforma }}</td>
         <td>{{ h.minutos|duracao }}</td>
+        <td>{{ {'dublado': 'Dublado', 'legendado': 'Legendado', 'original': 'Original'}.get(h.audio, '') }}</td>
         <td class="acoes">
           <form method="post" action="{{ url_for('excluir_historico', hid=h.id) }}">
             <button class="botao-texto" type="submit">Remover</button>

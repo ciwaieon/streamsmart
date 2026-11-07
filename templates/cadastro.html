@@ -5,6 +5,10 @@
 <h1>Criar conta</h1>
 <form method="post" class="formulario">
   <label>Nome <input type="text" name="nome" value="{{ nome or '' }}" required autofocus autocomplete="name"></label>
+  <label>Nome de usuário
+    <span class="campo-arroba"><span aria-hidden="true">@</span><input type="text" name="usuario" value="{{ usuario or '' }}" required
+      minlength="3" maxlength="20" pattern="[A-Za-z0-9_.]{3,20}" autocomplete="username" placeholder="seu.nome"></span>
+    <small class="suave">É assim que seus amigos vão te encontrar. Letras sem acento, números, ponto ou _.</small></label>
   <label>E-mail <input type="email" name="email" value="{{ email or '' }}" required autocomplete="email"></label>
   <label>Senha <input type="password" name="senha" minlength="6" required autocomplete="new-password"></label>
   <label>Confirmar senha <input type="password" name="confirmar" minlength="6" required autocomplete="new-password"></label>

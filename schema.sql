@@ -7,6 +7,7 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS usuarios (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     nome          TEXT    NOT NULL,
+    usuario       TEXT    UNIQUE,      -- nome de usuário público (@usuario), usado para adicionar amigos
     email         TEXT    NOT NULL UNIQUE,
     senha_hash    TEXT    NOT NULL,
     criado_em     TEXT    NOT NULL DEFAULT (datetime('now'))
@@ -57,13 +58,20 @@ CREATE TABLE IF NOT EXISTS titulos (
     tmdb_id        INTEGER,            -- identificador no The Movie Database
     poster_url     TEXT,               -- endereço da imagem do pôster (TMDB)
     nota_tmdb      REAL,               -- nota média no TMDB (0 a 10)
-    origem         TEXT    NOT NULL DEFAULT 'demo'   -- 'demo' (catálogo local) ou 'tmdb'
+    origem         TEXT    NOT NULL DEFAULT 'demo',  -- 'demo' (catálogo local) ou 'tmdb'
+    idioma_original TEXT               -- código ISO 639-1 do áudio original (pt, en, ja, ko...)
 );
 
 -- Em quais plataformas cada título está disponível (relação N:N)
 CREATE TABLE IF NOT EXISTS titulo_plataforma (
     titulo_id      INTEGER NOT NULL REFERENCES titulos(id) ON DELETE CASCADE,
     plataforma_id  INTEGER NOT NULL REFERENCES plataformas(id) ON DELETE CASCADE,
+    fonte          TEXT,      -- 'streaming' (catálogo oficial da plataforma), 'tmdb' ou 'demo'
+    dublado        INTEGER,   -- 1 = tem áudio em português nessa plataforma; NULL = não informado
+    legendado      INTEGER,   -- 1 = tem legenda em português nessa plataforma; NULL = não informado
+    qualidade      TEXT,      -- sd, hd, qhd, uhd
+    link           TEXT,      -- link direto para o título no streaming
+    expira_em      TEXT,      -- data em que sai do catálogo (AAAA-MM-DD), quando informada
     PRIMARY KEY (titulo_id, plataforma_id)
 );
 
@@ -74,7 +82,8 @@ CREATE TABLE IF NOT EXISTS historico (
     titulo_id       INTEGER NOT NULL REFERENCES titulos(id),
     plataforma_id   INTEGER NOT NULL REFERENCES plataformas(id),
     data            TEXT    NOT NULL,   -- AAAA-MM-DD
-    minutos         INTEGER NOT NULL CHECK (minutos > 0)
+    minutos         INTEGER NOT NULL CHECK (minutos > 0),
+    audio           TEXT    CHECK (audio IN ('dublado', 'legendado', 'original'))  -- como a pessoa assistiu
 );
 
 -- Avaliações dos usuários (RF09)

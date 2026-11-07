@@ -11,6 +11,7 @@ A disponibilidade por plataforma é fornecida ao TMDB pela JustWatch; a atribui�
 Usa apenas a biblioteca padrão do Python (urllib), sem dependências extras.
 """
 import json
+import os
 import time
 import unicodedata
 import urllib.error
@@ -25,16 +26,19 @@ IMAGENS = "https://image.tmdb.org/t/p/w342"
 REGIAO = "BR"
 IDIOMA = "pt-BR"
 
-# Nomes como aparecem no TMDB -> nome da plataforma no StreamSmart
-ALIASES = {
-    "netflix": "Netflix",
-    "amazon prime video": "Prime Video", "prime video": "Prime Video",
-    "disney plus": "Disney+", "disney+": "Disney+",
-    "max": "HBO Max", "hbo max": "HBO Max",
-    "globoplay": "Globoplay",
-    "apple tv+": "Apple TV+", "apple tv plus": "Apple TV+", "apple tv": "Apple TV+",
-    "paramount plus": "Paramount+", "paramount+": "Paramount+",
-}
+_PLATAFORMAS_JSON = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "plataformas.json")
+
+
+def _carregar_aliases():
+    """Nomes como aparecem no TMDB -> nome da plataforma no StreamSmart (lidos de data/plataformas.json)."""
+    with open(_PLATAFORMAS_JSON, encoding="utf-8") as f:
+        plataformas = json.load(f)["plataformas"]
+    return {apelido: p["nome"] for p in plataformas for apelido in p["nomes_tmdb"]}
+
+
+ALIASES = _carregar_aliases()
+# assinatura, grátis e grátis com anúncios (não inclui aluguel nem compra)
+MONETIZACAO = "flatrate|free|ads"
 
 
 class ErroTMDB(Exception):
@@ -105,7 +109,7 @@ class ClienteTMDB:
 
     def descobrir(self, tipo, provedor_id, pagina):
         return self.get(f"/discover/{tipo}", watch_region=REGIAO, with_watch_providers=provedor_id,
-                        with_watch_monetization_types="flatrate", language=IDIOMA,
+                        with_watch_monetization_types=MONETIZACAO, language=IDIOMA,
                         sort_by="popularity.desc", page=pagina, include_adult="false") or {}
 
     def detalhes(self, tipo, tmdb_id):
@@ -160,21 +164,22 @@ def converter(tipo, detalhes, plataformas):
         "sinopse": (detalhes.get("overview") or "").strip() or "Sinopse ainda não disponível em português.",
         "poster_url": f"{IMAGENS}{caminho}" if caminho else None,
         "nota_tmdb": round(detalhes.get("vote_average") or 0, 1),
+        "idioma_original": detalhes.get("original_language"),
         "plataformas": sorted(plataformas),
     }
 
 
 # ---------------------------------------------------------------------- importação
-def importar(con, cliente, paginas=3, trabalhadores=6, progresso=None):
+def importar(con, cliente, paginas=3, trabalhadores=8, progresso=None):
     """Busca os títulos mais populares de cada plataforma e grava no banco.
 
     paginas: quantas páginas (20 títulos cada) buscar por plataforma e por tipo.
     Com 3 páginas e 7 plataformas, são até 840 títulos antes de remover repetidos.
     Devolve um resumo com a quantidade de títulos novos e atualizados.
     """
-    def avisar(msg):
+    def avisar(msg, pct=None):
         if progresso:
-            progresso(msg)
+            progresso(msg, pct)
 
     ids_plataforma = {r["nome"]: r["id"] for r in con.execute("SELECT id, nome FROM plataformas")}
     provedores = cliente.provedores()
@@ -183,9 +188,8 @@ def importar(con, cliente, paginas=3, trabalhadores=6, progresso=None):
 
     # 1) descobre os títulos de cada plataforma; um título pode aparecer em várias
     encontrados = {}  # (tipo, tmdb_id) -> conjunto de plataformas
-    for nome, ids in provedores.items():
-        if nome not in ids_plataforma:
-            continue
+    alvos = [(n, ids) for n, ids in provedores.items() if n in ids_plataforma]
+    for i, (nome, ids) in enumerate(alvos, start=1):
         for tipo in ("movie", "tv"):
             for pagina in range(1, paginas + 1):
                 dados = cliente.descobrir(tipo, "|".join(str(i) for i in sorted(ids)), pagina)
@@ -193,7 +197,7 @@ def importar(con, cliente, paginas=3, trabalhadores=6, progresso=None):
                     encontrados.setdefault((tipo, item["id"]), set()).add(nome)
                 if pagina >= (dados.get("total_pages") or 0):
                     break
-        avisar(f"{nome}: lista de títulos obtida")
+        avisar(f"Listando títulos: {nome}", round(i / len(alvos) * 20))
 
     # 2) busca os detalhes em paralelo (duração e classificação não vêm na lista)
     def buscar(chave):
@@ -204,11 +208,14 @@ def importar(con, cliente, paginas=3, trabalhadores=6, progresso=None):
             return chave, None
 
     registros = []
+    chaves = list(encontrados)
     with ThreadPoolExecutor(max_workers=trabalhadores) as pool:
-        for (tipo, _), det in pool.map(buscar, list(encontrados)):
+        for n, ((tipo, _), det) in enumerate(pool.map(buscar, chaves), start=1):
             if det:
                 registros.append(converter(tipo, det, encontrados[(tipo, det["id"])]))
-    avisar(f"Detalhes de {len(registros)} títulos obtidos")
+            if n % 50 == 0:
+                avisar(f"Baixando detalhes: {n} de {len(chaves)}", 20 + round(n / len(chaves) * 70))
+    avisar("Gravando no banco de dados", 92)
 
     # 3) grava: atualiza se já existe (pelo id do TMDB ou pelo mesmo nome e ano), senão insere
     novos = atualizados = 0
@@ -219,19 +226,21 @@ def importar(con, cliente, paginas=3, trabalhadores=6, progresso=None):
             or con.execute("SELECT id FROM titulos WHERE tmdb_id IS NULL AND tipo = ? AND lower(titulo) = lower(?) AND ano = ?",
                            (r["tipo"], r["titulo"], r["ano"])).fetchone()
         valores = (r["titulo"], r["tipo"], r["ano"], r["duracao_min"], ",".join(r["generos"]), r["classificacao"],
-                   r["sinopse"], r["tmdb_id"], r["poster_url"], r["nota_tmdb"])
+                   r["sinopse"], r["tmdb_id"], r["poster_url"], r["nota_tmdb"], r["idioma_original"])
         if existente:
             con.execute("""UPDATE titulos SET titulo=?, tipo=?, ano=?, duracao_min=?, generos=?, classificacao=?,
-                           sinopse=?, tmdb_id=?, poster_url=?, nota_tmdb=? WHERE id=?""", (*valores, existente["id"]))
+                           sinopse=?, tmdb_id=?, poster_url=?, nota_tmdb=?, idioma_original=? WHERE id=?""",
+                        (*valores, existente["id"]))
             tid = existente["id"]
             atualizados += 1
         else:
             tid = con.execute("""INSERT INTO titulos (titulo, tipo, ano, duracao_min, generos, classificacao, sinopse,
-                                 tmdb_id, poster_url, nota_tmdb, vibes, origem)
-                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'tmdb')""", valores).lastrowid
+                                 tmdb_id, poster_url, nota_tmdb, idioma_original, vibes, origem)
+                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'tmdb')""", valores).lastrowid
             novos += 1
-        con.execute("DELETE FROM titulo_plataforma WHERE titulo_id = ?", (tid,))
-        con.executemany("INSERT INTO titulo_plataforma (titulo_id, plataforma_id) VALUES (?, ?)",
+        # a disponibilidade vinda do catálogo oficial dos streamings tem prioridade e não é apagada
+        con.execute("DELETE FROM titulo_plataforma WHERE titulo_id = ? AND (fonte IS NULL OR fonte <> 'streaming')", (tid,))
+        con.executemany("INSERT OR IGNORE INTO titulo_plataforma (titulo_id, plataforma_id, fonte) VALUES (?, ?, 'tmdb')",
                         [(tid, ids_plataforma[n]) for n in r["plataformas"]])
     con.commit()
     total = con.execute("SELECT COUNT(*) FROM titulos").fetchone()[0]

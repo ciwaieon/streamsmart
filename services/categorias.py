@@ -121,3 +121,28 @@ def normalizar_classificacao(texto):
     if texto.strip().upper() in ("L", "LIVRE", "AL", "ER"):
         return "L"
     return t if t in CLASSIFICACOES else None
+
+
+# ------------------------------------------------------------------ idioma original (áudio)
+IDIOMAS = {
+    "pt": "Português", "en": "Inglês", "es": "Espanhol", "fr": "Francês", "it": "Italiano", "de": "Alemão",
+    "ja": "Japonês", "ko": "Coreano", "zh": "Chinês", "cn": "Cantonês", "hi": "Hindi", "tr": "Turco",
+    "th": "Tailandês", "sv": "Sueco", "da": "Dinamarquês", "no": "Norueguês", "pl": "Polonês", "ru": "Russo",
+}
+# opções do filtro "Idioma original"
+FILTRO_IDIOMAS = [
+    ("pt", "Nacional (português)"), ("en", "Inglês"), ("es", "Espanhol"), ("ja", "Japonês (animes)"),
+    ("ko", "Coreano (doramas)"), ("zh", "Chinês"), ("outros", "Outros idiomas"),
+]
+_PRINCIPAIS = {"pt", "en", "es", "ja", "ko", "zh", "cn"}
+
+
+def nome_idioma(codigo):
+    return IDIOMAS.get(codigo, codigo.upper() if codigo else "Não informado")
+
+
+def combina_idioma(codigo, escolhidos):
+    if not escolhidos:
+        return True
+    codigo = "zh" if codigo == "cn" else codigo
+    return codigo in escolhidos or ("outros" in escolhidos and codigo not in _PRINCIPAIS)

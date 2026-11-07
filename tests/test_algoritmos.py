@@ -188,6 +188,14 @@ def test_amigos_aumentam_a_nota_e_ja_assistido_diminui():
     assert vista < base and "Você já assistiu" in motivos
 
 
+def test_filtro_de_idioma_original():
+    f = {**FILTROS, "vibes": []}
+    assert recomendador.pontuar(titulo(idioma_original="ko"), {**f, "idiomas": ["ko"]}, set()) is not None
+    assert recomendador.pontuar(titulo(idioma_original="en"), {**f, "idiomas": ["ko", "ja"]}, set()) is None
+    assert recomendador.pontuar(titulo(idioma_original="tr"), {**f, "idiomas": ["outros"]}, set()) is not None
+    assert recomendador.pontuar(titulo(idioma_original="en"), {**f, "idiomas": ["outros"]}, set()) is None
+
+
 def test_normalizacoes_de_categoria_e_classificacao():
     assert categorias.normalizar_generos(["policial", "Comédia", "comédia", "xyz"]) == ["crime", "comédia"]
     assert categorias.normalizar_classificacao("L") == "L"

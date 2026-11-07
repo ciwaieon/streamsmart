@@ -1,0 +1,11 @@
+{# Idioma original e como as pessoas assistiram (dublado/legendado) #}
+<div class="audio-info">
+  {% if t.idioma_original == 'pt' %}
+    <span class="selo selo-manter">Nacional, áudio em português</span>
+  {% else %}
+    {% if t.idioma_original %}<span class="suave">Áudio original: {{ nome_idioma(t.idioma_original) }}</span>{% endif %}
+    {% set dub = audio.get('dublado', 0) %}{% set leg = audio.get('legendado', 0) %}
+    {% if dub %}<span class="suave pequeno">{{ dub }} pessoa{{ 's' if dub > 1 }} assistiu{{ 'ram' if dub > 1 }} dublado</span>{% endif %}
+    {% if leg %}<span class="suave pequeno">{{ leg }} pessoa{{ 's' if leg > 1 }} assistiu{{ 'ram' if leg > 1 }} legendado</span>{% endif %}
+  {% endif %}
+</div>

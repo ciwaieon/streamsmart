@@ -19,7 +19,7 @@ Projeto Integrador: Laboratório de Programação, CST em Análise e Desenvolvim
 | Banco de dados | SQLite (SQL puro, sem ORM), ver `schema.sql` |
 | Catálogo | API do The Movie Database (TMDB), com disponibilidade por plataforma da JustWatch |
 | Front-end | HTML5, CSS3 e JavaScript (templates Jinja2), responsivo, com fontes incluídas no projeto |
-| Testes | pytest (44 testes) |
+| Testes | pytest (54 testes) |
 
 ## Como executar
 
@@ -35,27 +35,46 @@ Contas de demonstração (já vêm com assinaturas, histórico, avaliações e a
 
 | Quem | E-mail | Senha |
 |---|---|---|
-| Usuário principal | `demo@streamsmart.com` | `demo123` |
-| Amiga | `ana@streamsmart.com` | `ana12345` |
-| Amigo | `bruno@streamsmart.com` | `bruno123` |
-| Pedido de amizade pendente | `carla@streamsmart.com` | `carla123` |
+| Usuário principal (@demo) | `demo@streamsmart.com` | `demo123` |
+| Amiga (@ana.souza) | `ana@streamsmart.com` | `ana12345` |
+| Amigo (@brunolima) | `bruno@streamsmart.com` | `bruno123` |
+| Pedido de amizade pendente (@carla.m) | `carla@streamsmart.com` | `carla123` |
 
 Quem já tinha o `streamsmart.db` da versão anterior não precisa apagar nada: o banco é atualizado sozinho.
 Para começar do zero, apague o arquivo `streamsmart.db`.
 
-## Importar o catálogo do TMDB (milhares de títulos com pôster)
+## Catálogo dos streamings (importação automática)
 
-Sem o TMDB, o sistema usa um catálogo de demonstração com 69 títulos. Para importar o catálogo real:
+O catálogo é montado sozinho, em segundo plano, quando o sistema liga e a cada 6 horas. Quem usa o site não faz nada.
 
-1. Crie uma conta grátis em [themoviedb.org](https://www.themoviedb.org/signup) e confirme o e-mail.
-2. Em **Configurações, API** ([themoviedb.org/settings/api](https://www.themoviedb.org/settings/api)), peça uma
-   chave de uso pessoal ou educacional.
-3. No StreamSmart, entre no menu **Catálogo TMDB**, cole a chave e clique em **Conferir e salvar**.
-4. Escolha a quantidade e clique em **Importar do TMDB**. Na opção "Médio", leva cerca de 1 minuto.
+**Fonte principal: [Streaming Availability API](https://www.movieofthenight.com/about/api) (Movie of the Night).**
+Ela lê o catálogo de cada streaming no Brasil e informa, em cada plataforma, se o título tem **áudio em português
+(dublado)**, **legenda em português**, a qualidade (HD, 4K), o **link direto** para assistir e a data em que o título
+sai do catálogo. O sistema pergunta à API quais streamings ela cobre no Brasil e inclui todos. Um streaming novo entra
+sozinho. Os dados da API são atualizados diariamente.
 
-São importados os títulos mais populares de cada plataforma, disponíveis por assinatura no Brasil, com título
-e sinopse em português, pôster, duração, gêneros, classificação indicativa brasileira e nota do público. Rodar
-de novo atualiza a lista e mantém o histórico e as avaliações.
+**Complemento: [TMDB](https://www.themoviedb.org/).** Fornece título e sinopse em português, classificação indicativa
+brasileira e duração dos episódios dos títulos acima, e cobre plataformas que a fonte principal não acompanha (nesses
+casos, a tela mostra que o áudio e a legenda não foram informados pela plataforma).
+
+**Limite do plano gratuito:** a Streaming Availability API permite 100 consultas por dia no plano gratuito, sem cartão.
+O sistema controla esse limite sozinho: lê os catálogos em rodízio (primeiro a página 1 de todos os streamings, depois
+a página 2...) e continua no dia seguinte de onde parou. Assim, todos os streamings aparecem desde o primeiro dia e o
+catálogo vai crescendo. Com um plano pago (a partir de US$ 29 por mês), basta aumentar o limite com a variável
+`STREAMING_LIMITE_DIARIO` para o catálogo completo entrar de uma vez.
+
+**Configuração única (desenvolvedores):**
+
+1. **Streaming Availability API:** crie a chave gratuita (pelo site da Movie of the Night ou pela RapidAPI; o sistema
+   aceita as duas) e salve no arquivo `streaming_chave.txt` (modelo em `streaming_chave.exemplo.txt`).
+2. **TMDB (para os textos em português):** crie uma conta em [themoviedb.org](https://www.themoviedb.org/signup), peça a
+   chave em [Configurações, API](https://www.themoviedb.org/settings/api) e salve em `tmdb_chave.txt`.
+3. Ligue o sistema (`python app.py`). O andamento aparece em `/catalogo`.
+
+> ⚠️ Não envie `streaming_chave.txt`, `tmdb_chave.txt` nem `streamsmart.db` para o GitHub. Pelo terminal, o
+> `.gitignore` já impede. Pelo site do GitHub, arrastando arquivos, o `.gitignore` não vale: não selecione esses arquivos.
+
+Sem as chaves, o sistema funciona com o catálogo de demonstração (69 títulos).
 
 ## Funcionalidades (requisitos funcionais)
 
@@ -69,9 +88,10 @@ de novo atualiza a lista e mantém o histórico e as avaliações.
 | RF06 | Filtro por plataformas e por "só nos streamings que eu assino" | `services/recomendador.py` |
 | RF07 | Histórico do que o usuário assistiu | `/historico` |
 | RF08 | Relatório de custo-benefício com sugestão de pausa | `services/relatorio.py` |
-| RF09 | Avaliação de 1 a 5 estrelas, com comentário, de cada título assistido | `/titulo/<id>`, `/avaliacoes` |
-| RF10 | Amizades (pedido, aceite, recusa) e feed com as avaliações dos amigos | `/amigos` |
-| RF11 | Importação do catálogo do TMDB | `services/tmdb.py`, `/catalogo` |
+| RF09 | Avaliação de 1 a 5 estrelas, com comentário, e registro de como assistiu (dublado ou legendado) | `/titulo/<id>`, `/avaliacoes` |
+| RF10 | Nome de usuário (@), busca de pessoas, amizades (pedido, aceite, recusa) e feed com as avaliações dos amigos | `/amigos` |
+| RF11 | Importação automática dos catálogos oficiais dos streamings no Brasil (Streaming Availability API), com cota diária e retomada, complementada pelo TMDB | `services/streaming.py`, `services/importador.py`, `services/tmdb.py` |
+| RF12 | Dublado e legendado por plataforma (dados oficiais), link direto, qualidade e data de saída; filtros de áudio e de idioma original | `services/streaming.py`, `titulo.html` |
 
 ## Estruturas de dados e algoritmos
 
@@ -97,7 +117,7 @@ A vibe "Bater a nostalgia" usa o ano de lançamento.
 ## Testes e benchmark
 
 ```bash
-python -m pytest          # 44 testes; a integração com o TMDB é testada com respostas simuladas, sem internet
+python -m pytest          # 54 testes; a integração com o TMDB é testada com respostas simuladas, sem internet
 python benchmark.py       # compara merge sort, insertion sort e sorted(); gera resultados/benchmark.csv e .png
 ```
 
@@ -116,8 +136,11 @@ streamsmart/
 │   ├── custos.py        # RF03, RF04
 │   ├── recomendador.py  # RF05, RF06
 │   ├── relatorio.py     # RF08
-│   └── tmdb.py          # RF11, cliente da API do TMDB
-├── data/catalogo.json   # catálogo de demonstração (69 títulos, 7 plataformas)
+│   ├── streaming.py     # RF11, RF12: catálogos oficiais dos streamings, áudio e legenda
+│   ├── tmdb.py          # complemento em português (TMDB)
+│   └── importador.py    # importação automática em segundo plano
+├── data/catalogo.json   # catálogo de demonstração (69 títulos)
+├── data/plataformas.json # as 21 plataformas, cores e nomes no TMDB
 ├── templates/           # telas (HTML/Jinja2)
 ├── static/              # estilos, logo e fontes
 └── tests/               # testes automatizados (pytest)
@@ -137,6 +160,11 @@ streamsmart/
 - Fontes Lora e Inter, ambas sob a licença SIL Open Font License, incluídas em `static/fonts`.
 
 ## Créditos e limitações
+
+- **Dublado e legendado:** vêm do catálogo de cada streaming, pela Streaming Availability API. Para as plataformas que
+  ela não cobre, vale o que os usuários informam ao registrar que assistiram (dublado ou legendado).
+- Catálogos, áudios e legendas dos streamings: Streaming Availability API, da Movie of the Night (atribuição exigida
+  pelos termos de uso da API, exibida no rodapé).
 
 - Dados de filmes e séries fornecidos pelo [TMDB](https://www.themoviedb.org/). Este produto usa a API do TMDB, mas não
   é endossado nem certificado pelo TMDB. Disponibilidade nas plataformas fornecida pela [JustWatch](https://www.justwatch.com/br).

@@ -24,9 +24,9 @@
   <details class="usuario">
     <summary>{{ avatar(usuario_nome) }}<span>{{ usuario_nome.split()[0] }}</span><span class="seta">▼</span></summary>
     <div class="caixa">
+      {% if usuario_arroba %}<span class="caixa-arroba">@{{ usuario_arroba }}</span>{% endif %}
       <a href="{{ url_for('avaliacoes') }}">Minhas avaliações</a>
       <a href="{{ url_for('historico') }}">Histórico do que assisti</a>
-      <a href="{{ url_for('catalogo') }}">Catálogo TMDB</a>
       <hr>
       <a href="{{ url_for('sair') }}">Sair da conta</a>
     </div>

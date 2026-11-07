@@ -7,7 +7,7 @@ Funciona em duas etapas:
 2. Pontuação e ordenação: cada título restante recebe uma nota de 0 a 100 e a
    lista é ordenada com merge sort pelo critério escolhido.
 """
-from .categorias import TEMPOS_MIN, VIBES, afinidade, nivel_classificacao
+from .categorias import TEMPOS_MIN, VIBES, afinidade, combina_idioma, nivel_classificacao
 from .estruturas import merge_sort
 
 COMPANHIAS = {"sozinho": "Sozinho", "casal": "Em casal", "criancas": "Com crianças"}
@@ -38,7 +38,7 @@ def episodios_que_cabem(titulo, minutos):
 def pontuar(titulo, filtros, plataformas_usuario, ja_assistidos=frozenset(), notas_amigos=None):
     """Retorna (nota, motivos) ou None quando o título deve ser descartado.
 
-    filtros: dict com tempo, vibes (lista), categorias (lista), tipo, classificacao_max,
+    filtros: dict com tempo, vibes (lista), categorias (lista), idiomas (lista), tipo, classificacao_max,
              companhia, plataformas (lista de nomes) e somente_minhas (bool).
     plataformas_usuario: conjunto (set) com os nomes das plataformas assinadas.
     notas_amigos: dict titulo_id -> (média, quantidade) das avaliações dos amigos.
@@ -54,6 +54,15 @@ def pontuar(titulo, filtros, plataformas_usuario, ja_assistidos=frozenset(), not
     # --- Categorias (pelo menos uma das escolhidas) ---
     categorias = filtros.get("categorias") or []
     if categorias and not set(categorias) & set(titulo["generos"]):
+        return None
+
+    # --- Áudio em português (dublado/legendado), pelo catálogo oficial ou por quem já assistiu ---
+    for exigido, campo in (("dublado", "tem_dublado"), ("legendado", "tem_legenda")):
+        if exigido in (filtros.get("audio") or []) and not titulo.get(campo):
+            return None
+
+    # --- Idioma original (áudio) ---
+    if not combina_idioma(titulo.get("idioma_original"), filtros.get("idiomas") or []):
         return None
 
     # --- Vibes (o título precisa combinar com pelo menos uma) ---

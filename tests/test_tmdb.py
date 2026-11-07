@@ -12,7 +12,7 @@ PROVEDORES = {"results": [
     {"provider_id": 119, "provider_name": "Amazon Prime Video"},
     {"provider_id": 999, "provider_name": "Serviço Desconhecido"},
 ]}
-FILME = {"id": 550, "title": "Clube da Luta", "release_date": "1999-10-15", "runtime": 139,
+FILME = {"id": 550, "title": "Clube da Luta", "original_language": "en", "release_date": "1999-10-15", "runtime": 139,
          "genres": [{"id": 18}, {"id": 53}], "overview": "Um homem insone conhece um vendedor de sabão.",
          "poster_path": "/abc.jpg", "vote_average": 8.43,
          "release_dates": {"results": [{"iso_3166_1": "US", "release_dates": [{"certification": "R"}]},
@@ -80,7 +80,8 @@ def test_importar_grava_titulos_plataformas_e_aproveita_os_existentes(tmp_path):
     assert plataformas == {"Netflix", "Prime Video"}        # apareceu nas duas plataformas
     # só assinatura (flatrate) e região Brasil
     descobertas = [c for c in chamadas if c[0].startswith("/discover")]
-    assert all(c[1]["watch_region"] == "BR" and c[1]["with_watch_monetization_types"] == "flatrate" for c in descobertas)
+    assert all(c[1]["watch_region"] == "BR" and c[1]["with_watch_monetization_types"] == "flatrate|free|ads" for c in descobertas)
+    assert con.execute("SELECT idioma_original FROM titulos WHERE tmdb_id = 550").fetchone()[0] == "en"
     # importar de novo não duplica
     r2 = importar(con, ClienteTMDB("x", buscar=falso_tmdb([])), paginas=1, trabalhadores=2)
     assert r2["novos"] == 0 and r2["total"] == 71
@@ -92,6 +93,9 @@ def test_migracao_de_banco_antigo(tmp_path):
     caminho = str(tmp_path / "antigo.db")
     con = sqlite3.connect(caminho)
     con.executescript("""
+        CREATE TABLE usuarios (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, email TEXT NOT NULL UNIQUE,
+            senha_hash TEXT NOT NULL, criado_em TEXT NOT NULL DEFAULT (datetime('now')));
+        INSERT INTO usuarios (nome, email, senha_hash) VALUES ('Zé', 'ze.silva@x.com', 'x'), ('Zé 2', 'ze.silva@y.com', 'x');
         CREATE TABLE titulos (id INTEGER PRIMARY KEY AUTOINCREMENT, titulo TEXT NOT NULL, tipo TEXT NOT NULL, ano INTEGER,
             duracao_min INTEGER NOT NULL, generos TEXT NOT NULL, vibes TEXT NOT NULL, classificacao TEXT NOT NULL, sinopse TEXT NOT NULL);
         INSERT INTO titulos (titulo, tipo, ano, duracao_min, generos, vibes, classificacao, sinopse)
@@ -103,3 +107,32 @@ def test_migracao_de_banco_antigo(tmp_path):
     assert {"tmdb_id", "poster_url", "nota_tmdb", "origem"} <= colunas
     assert con.execute("SELECT generos FROM titulos WHERE titulo = 'Antigo'").fetchone()[0] == "crime,comédia"
     assert con.execute("SELECT COUNT(*) FROM sqlite_master WHERE name IN ('avaliacoes', 'amizades', 'configuracoes')").fetchone()[0] == 3
+    # usuários antigos ganham nome de usuário único a partir do e-mail
+    assert [r[0] for r in con.execute("SELECT usuario FROM usuarios ORDER BY id")] == ["ze.silva", "ze.silva2"]
+
+
+def test_importacao_automatica_em_fases_e_status(tmp_path):
+    from services import importador
+    caminho = str(tmp_path / "auto.db")
+    database.inicializar(caminho, com_demo=True)
+    con = database.conectar(caminho)
+    # sem chave: não importa e registra o motivo
+    assert importador.executar(caminho) is False
+    assert importador.status(con)["situacao"] == "sem_chave"
+    assert importador.status(con)["streaming"]["situacao"] == "sem_chave"
+    # com cliente (chave): importa as duas fases e marca como pronto
+    cliente = ClienteTMDB("x", buscar=falso_tmdb([]))
+    assert importador.executar(caminho, cliente=cliente, fases=[("rápida", 1), ("completa", 2)]) is True
+    st = importador.status(con)
+    assert st["situacao"] == "pronto" and st["progresso"] == 100 and st["ultima"]
+    assert repo.contar_catalogo(con)["tmdb"] == 3
+    # logo depois, não precisa importar de novo
+    assert importador.precisa_atualizar(con) is False
+    assert importador.executar(caminho, cliente=cliente) is False
+
+
+def test_plataformas_internacionais_e_apelidos():
+    from services.tmdb import ALIASES
+    assert ALIASES["crunchyroll"] == "Crunchyroll" and ALIASES["rakuten viki"] == "Viki"
+    assert ALIASES["amazon prime video"] == "Prime Video" and ALIASES["max"] == "HBO Max"
+    assert len(set(ALIASES.values())) >= 20
