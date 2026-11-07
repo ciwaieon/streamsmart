@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "_macros.html" import capa, estrelas_form %}
+{% block titulo %}Minhas avaliações{% endblock %}
+{% block conteudo %}
+<div class="topo-pagina">
+  <div>
+    <h1>Minhas avaliações</h1>
+    <p>Dê nota ao que você assistiu. Suas notas aparecem para os seus amigos e ajudam nas recomendações deles.</p>
+  </div>
+  <a class="botao botao-linha" href="{{ url_for('amigos') }}">Ver avaliações dos amigos</a>
+</div>
+
+{% if pendentes %}
+<section class="bloco">
+  <h2>Você assistiu e ainda não avaliou</h2>
+  <div class="grade-pendentes">
+    {% for t in pendentes %}
+    <div class="folha pendente">
+      <a class="mini-poster" href="{{ url_for('titulo', tid=t.id) }}">{{ capa(t, '#3A3D46') }}</a>
+      <form method="post" action="{{ url_for('avaliar', tid=t.id) }}">
+        <input type="hidden" name="voltar" value="{{ url_for('avaliacoes') }}">
+        <strong style="font-family:var(--serif)">{{ t.titulo }}</strong>
+        <span class="suave pequeno">Assistido em {{ t.ultima_vez|data_br }}</span>
+        {{ estrelas_form('nota', 0, 'p' ~ t.id) }}
+        <button class="botao botao-pequeno" type="submit">Avaliar</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="folha">
+  <h2>Avaliadas por você</h2>
+  {% if minhas %}
+  <div class="tabela-rolagem">
+  <table class="tabela">
+    <thead><tr><th>Título</th><th>Nota</th><th>Comentário</th><th>Quando</th></tr></thead>
+    <tbody>
+    {% for a in minhas %}
+      <tr>
+        <td><a href="{{ url_for('titulo', tid=a.titulo_id) }}">{{ a.titulo }}</a>{% if a.ano %} <span class="suave">({{ a.ano }})</span>{% endif %}</td>
+        <td><span class="estrelas" aria-label="{{ a.nota }} de 5">{{ a.nota|estrelas }}</span></td>
+        <td>{{ a.comentario or '' }}</td>
+        <td class="suave">{{ a.criado_em[:10]|data_br }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="suave">Você ainda não avaliou nada. Abra um título nas recomendações e dê sua nota.</p>
+  {% endif %}
+</section>
+{% endblock %}

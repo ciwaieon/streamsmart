@@ -1,0 +1,940 @@
+{
+  "aviso": "Catálogo de demonstração, usado quando o TMDB ainda não foi importado. Durações aproximadas e disponibilidade por plataforma ilustrativas.",
+  "plataformas": [
+    {
+      "nome": "Netflix",
+      "cor": "#C47F86"
+    },
+    {
+      "nome": "Prime Video",
+      "cor": "#5E9E9B"
+    },
+    {
+      "nome": "Disney+",
+      "cor": "#7F98BE"
+    },
+    {
+      "nome": "HBO Max",
+      "cor": "#A08CC4"
+    },
+    {
+      "nome": "Globoplay",
+      "cor": "#D0A061"
+    },
+    {
+      "nome": "Apple TV+",
+      "cor": "#A8A49C"
+    },
+    {
+      "nome": "Paramount+",
+      "cor": "#8FAE87"
+    }
+  ],
+  "titulos": [
+    {
+      "titulo": "Brooklyn Nine-Nine",
+      "tipo": "serie",
+      "ano": 2013,
+      "duracao_min": 22,
+      "generos": "comédia,policial",
+      "vibes": "rir,leve",
+      "classificacao": "12",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Um detetive brincalhão e sua equipe resolvem crimes numa delegacia de Nova York comandada por um capitão sério."
+    },
+    {
+      "titulo": "The Office",
+      "tipo": "serie",
+      "ano": 2005,
+      "duracao_min": 22,
+      "generos": "comédia",
+      "vibes": "rir,leve",
+      "classificacao": "12",
+      "plataformas": [
+        "Prime Video"
+      ],
+      "sinopse": "Documentário fictício sobre o dia a dia constrangedor de um escritório de papel e seu gerente sem noção."
+    },
+    {
+      "titulo": "Friends",
+      "tipo": "serie",
+      "ano": 1994,
+      "duracao_min": 22,
+      "generos": "comédia,romance",
+      "vibes": "rir,leve",
+      "classificacao": "12",
+      "plataformas": [
+        "HBO Max"
+      ],
+      "sinopse": "Seis amigos dividem apartamentos, cafés e confusões amorosas em Manhattan."
+    },
+    {
+      "titulo": "Ted Lasso",
+      "tipo": "serie",
+      "ano": 2020,
+      "duracao_min": 35,
+      "generos": "comédia,drama,esporte",
+      "vibes": "rir,emocao",
+      "classificacao": "14",
+      "plataformas": [
+        "Apple TV+"
+      ],
+      "sinopse": "Um técnico de futebol americano otimista é contratado para treinar um time de futebol inglês."
+    },
+    {
+      "titulo": "Modern Family",
+      "tipo": "serie",
+      "ano": 2009,
+      "duracao_min": 22,
+      "generos": "comédia,família",
+      "vibes": "rir,leve",
+      "classificacao": "10",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "Três núcleos de uma mesma família mostram as alegrias e os desastres da vida doméstica."
+    },
+    {
+      "titulo": "Os Simpsons",
+      "tipo": "serie",
+      "ano": 1989,
+      "duracao_min": 22,
+      "generos": "animação,comédia",
+      "vibes": "rir,leve",
+      "classificacao": "12",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "As aventuras absurdas de uma família amarela de Springfield."
+    },
+    {
+      "titulo": "Bluey",
+      "tipo": "serie",
+      "ano": 2018,
+      "duracao_min": 8,
+      "generos": "animação,infantil,família",
+      "vibes": "leve,rir",
+      "classificacao": "L",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "Uma cachorrinha cheia de imaginação transforma o cotidiano da família em brincadeira."
+    },
+    {
+      "titulo": "Wandinha",
+      "tipo": "serie",
+      "ano": 2022,
+      "duracao_min": 50,
+      "generos": "comédia,mistério,fantasia",
+      "vibes": "suspense,rir",
+      "classificacao": "14",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "A filha sombria da Família Addams investiga mistérios em um colégio para jovens peculiares."
+    },
+    {
+      "titulo": "Stranger Things",
+      "tipo": "serie",
+      "ano": 2016,
+      "duracao_min": 55,
+      "generos": "ficção científica,terror,aventura",
+      "vibes": "suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Amigos de uma pequena cidade enfrentam forças sobrenaturais após o sumiço de um garoto."
+    },
+    {
+      "titulo": "Dark",
+      "tipo": "serie",
+      "ano": 2017,
+      "duracao_min": 55,
+      "generos": "ficção científica,mistério",
+      "vibes": "suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "O desaparecimento de crianças revela segredos de quatro famílias ligados a viagens no tempo."
+    },
+    {
+      "titulo": "Round 6",
+      "tipo": "serie",
+      "ano": 2021,
+      "duracao_min": 55,
+      "generos": "drama,suspense",
+      "vibes": "suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Pessoas endividadas aceitam participar de jogos infantis com prêmios milionários e regras mortais."
+    },
+    {
+      "titulo": "The Last of Us",
+      "tipo": "serie",
+      "ano": 2023,
+      "duracao_min": 55,
+      "generos": "drama,ficção científica",
+      "vibes": "suspense,emocao",
+      "classificacao": "16",
+      "plataformas": [
+        "HBO Max"
+      ],
+      "sinopse": "Um sobrevivente endurecido escolta uma adolescente por um país devastado por uma pandemia."
+    },
+    {
+      "titulo": "Succession",
+      "tipo": "serie",
+      "ano": 2018,
+      "duracao_min": 60,
+      "generos": "drama",
+      "vibes": "suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "HBO Max"
+      ],
+      "sinopse": "Os filhos de um magnata da mídia disputam o controle do império da família."
+    },
+    {
+      "titulo": "Ruptura",
+      "tipo": "serie",
+      "ano": 2022,
+      "duracao_min": 50,
+      "generos": "ficção científica,suspense",
+      "vibes": "suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "Apple TV+"
+      ],
+      "sinopse": "Funcionários têm as memórias do trabalho separadas das da vida pessoal por um procedimento cirúrgico."
+    },
+    {
+      "titulo": "The Boys",
+      "tipo": "serie",
+      "ano": 2019,
+      "duracao_min": 60,
+      "generos": "ação,super-herói",
+      "vibes": "suspense",
+      "classificacao": "18",
+      "plataformas": [
+        "Prime Video"
+      ],
+      "sinopse": "Um grupo de vigilantes enfrenta super-heróis corruptos e celebridades da indústria."
+    },
+    {
+      "titulo": "Reacher",
+      "tipo": "serie",
+      "ano": 2022,
+      "duracao_min": 50,
+      "generos": "ação,policial",
+      "vibes": "suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "Prime Video"
+      ],
+      "sinopse": "Um ex-policial militar andarilho se envolve na investigação de uma conspiração numa cidade pequena."
+    },
+    {
+      "titulo": "O Urso",
+      "tipo": "serie",
+      "ano": 2022,
+      "duracao_min": 30,
+      "generos": "drama,comédia",
+      "vibes": "emocao,suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "Um chef premiado volta para casa para tocar a lanchonete caótica da família."
+    },
+    {
+      "titulo": "This Is Us",
+      "tipo": "serie",
+      "ano": 2016,
+      "duracao_min": 43,
+      "generos": "drama,família",
+      "vibes": "emocao",
+      "classificacao": "12",
+      "plataformas": [
+        "Disney+",
+        "Prime Video"
+      ],
+      "sinopse": "A história de uma família contada em diferentes épocas, unindo perdas, amores e reencontros."
+    },
+    {
+      "titulo": "Heartstopper",
+      "tipo": "serie",
+      "ano": 2022,
+      "duracao_min": 30,
+      "generos": "romance,drama",
+      "vibes": "emocao,leve",
+      "classificacao": "12",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Dois colegas de escola descobrem que a amizade entre eles está virando algo maior."
+    },
+    {
+      "titulo": "Gilmore Girls",
+      "tipo": "serie",
+      "ano": 2000,
+      "duracao_min": 44,
+      "generos": "comédia,drama",
+      "vibes": "leve,rir",
+      "classificacao": "10",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Mãe e filha muito unidas vivem numa cidadezinha cheia de personagens excêntricos."
+    },
+    {
+      "titulo": "Avenida Brasil",
+      "tipo": "serie",
+      "ano": 2012,
+      "duracao_min": 45,
+      "generos": "novela,drama",
+      "vibes": "suspense,emocao",
+      "classificacao": "14",
+      "plataformas": [
+        "Globoplay"
+      ],
+      "sinopse": "Uma jovem volta ao bairro de infância decidida a se vingar da madrasta que a abandonou num lixão."
+    },
+    {
+      "titulo": "Sob Pressão",
+      "tipo": "serie",
+      "ano": 2017,
+      "duracao_min": 45,
+      "generos": "drama,médico",
+      "vibes": "emocao,suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "Globoplay"
+      ],
+      "sinopse": "Médicos de um hospital público do Rio lutam para salvar vidas com poucos recursos."
+    },
+    {
+      "titulo": "Cidade Invisível",
+      "tipo": "serie",
+      "ano": 2021,
+      "duracao_min": 40,
+      "generos": "fantasia,mistério",
+      "vibes": "suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Um policial ambiental descobre criaturas do folclore brasileiro vivendo escondidas no Rio."
+    },
+    {
+      "titulo": "Only Murders in the Building",
+      "tipo": "serie",
+      "ano": 2021,
+      "duracao_min": 32,
+      "generos": "comédia,mistério",
+      "vibes": "rir,suspense",
+      "classificacao": "14",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "Três vizinhos fãs de podcasts de crime investigam uma morte no prédio onde moram."
+    },
+    {
+      "titulo": "Yellowstone",
+      "tipo": "serie",
+      "ano": 2018,
+      "duracao_min": 50,
+      "generos": "drama,faroeste",
+      "vibes": "suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "Paramount+"
+      ],
+      "sinopse": "Uma família de rancheiros enfrenta disputas de terra com vizinhos, empresas e uma reserva indígena."
+    },
+    {
+      "titulo": "Bob Esponja",
+      "tipo": "serie",
+      "ano": 1999,
+      "duracao_min": 11,
+      "generos": "animação,infantil,comédia",
+      "vibes": "rir,leve",
+      "classificacao": "L",
+      "plataformas": [
+        "Paramount+"
+      ],
+      "sinopse": "Uma esponja otimista vive confusões no fundo do mar com seus amigos da Fenda do Biquíni."
+    },
+    {
+      "titulo": "Coco",
+      "tipo": "filme",
+      "ano": 2017,
+      "duracao_min": 105,
+      "generos": "animação,família,musical",
+      "vibes": "emocao,leve",
+      "classificacao": "L",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "Um garoto apaixonado por música vai parar na Terra dos Mortos durante o Dia de Finados mexicano."
+    },
+    {
+      "titulo": "Divertida Mente",
+      "tipo": "filme",
+      "ano": 2015,
+      "duracao_min": 95,
+      "generos": "animação,família",
+      "vibes": "emocao,rir",
+      "classificacao": "L",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "As emoções de uma menina tentam ajudá-la a se adaptar a uma mudança de cidade."
+    },
+    {
+      "titulo": "Divertida Mente 2",
+      "tipo": "filme",
+      "ano": 2024,
+      "duracao_min": 96,
+      "generos": "animação,família",
+      "vibes": "emocao,rir",
+      "classificacao": "L",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "Na adolescência, novas emoções chegam à mente de Riley e bagunçam a sala de controle."
+    },
+    {
+      "titulo": "Up: Altas Aventuras",
+      "tipo": "filme",
+      "ano": 2009,
+      "duracao_min": 96,
+      "generos": "animação,aventura,família",
+      "vibes": "emocao,leve",
+      "classificacao": "L",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "Um viúvo amarra balões à casa para realizar uma viagem prometida e ganha um companheiro inesperado."
+    },
+    {
+      "titulo": "Toy Story",
+      "tipo": "filme",
+      "ano": 1995,
+      "duracao_min": 81,
+      "generos": "animação,família,comédia",
+      "vibes": "rir,leve",
+      "classificacao": "L",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "Os brinquedos de um menino ganham vida quando ninguém está olhando, e um novo astronauta muda tudo."
+    },
+    {
+      "titulo": "Encanto",
+      "tipo": "filme",
+      "ano": 2021,
+      "duracao_min": 102,
+      "generos": "animação,musical,família",
+      "vibes": "leve,emocao",
+      "classificacao": "L",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "A única integrante sem poderes de uma família mágica colombiana tenta salvar a casa encantada."
+    },
+    {
+      "titulo": "Shrek",
+      "tipo": "filme",
+      "ano": 2001,
+      "duracao_min": 90,
+      "generos": "animação,comédia",
+      "vibes": "rir,leve",
+      "classificacao": "L",
+      "plataformas": [
+        "Netflix",
+        "Prime Video"
+      ],
+      "sinopse": "Um ogro mal-humorado parte para resgatar uma princesa e recuperar a paz do seu pântano."
+    },
+    {
+      "titulo": "As Branquelas",
+      "tipo": "filme",
+      "ano": 2004,
+      "duracao_min": 109,
+      "generos": "comédia",
+      "vibes": "rir",
+      "classificacao": "12",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Dois agentes do FBI se disfarçam de herdeiras ricas para evitar um sequestro."
+    },
+    {
+      "titulo": "Minha Mãe é uma Peça",
+      "tipo": "filme",
+      "ano": 2013,
+      "duracao_min": 85,
+      "generos": "comédia",
+      "vibes": "rir,leve",
+      "classificacao": "12",
+      "plataformas": [
+        "Globoplay",
+        "Prime Video"
+      ],
+      "sinopse": "Uma mãe exagerada sai de casa após uma briga com os filhos e conta suas histórias à tia."
+    },
+    {
+      "titulo": "O Auto da Compadecida",
+      "tipo": "filme",
+      "ano": 2000,
+      "duracao_min": 104,
+      "generos": "comédia,aventura",
+      "vibes": "rir,emocao",
+      "classificacao": "12",
+      "plataformas": [
+        "Globoplay"
+      ],
+      "sinopse": "Dois nordestinos espertos aplicam golpes no sertão até enfrentarem um julgamento divino."
+    },
+    {
+      "titulo": "Se Beber, Não Case!",
+      "tipo": "filme",
+      "ano": 2009,
+      "duracao_min": 100,
+      "generos": "comédia",
+      "vibes": "rir",
+      "classificacao": "16",
+      "plataformas": [
+        "HBO Max"
+      ],
+      "sinopse": "Amigos acordam em Las Vegas sem lembrar da noite anterior e sem o noivo."
+    },
+    {
+      "titulo": "Barbie",
+      "tipo": "filme",
+      "ano": 2023,
+      "duracao_min": 114,
+      "generos": "comédia,fantasia",
+      "vibes": "rir,leve",
+      "classificacao": "12",
+      "plataformas": [
+        "HBO Max"
+      ],
+      "sinopse": "A boneca mais famosa do mundo deixa seu mundo perfeito e descobre a vida real."
+    },
+    {
+      "titulo": "Glass Onion",
+      "tipo": "filme",
+      "ano": 2022,
+      "duracao_min": 139,
+      "generos": "comédia,mistério",
+      "vibes": "suspense,rir",
+      "classificacao": "14",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Um detetive excêntrico investiga um jogo de assassinato numa ilha particular de um bilionário."
+    },
+    {
+      "titulo": "Entre Facas e Segredos",
+      "tipo": "filme",
+      "ano": 2019,
+      "duracao_min": 130,
+      "generos": "mistério,comédia",
+      "vibes": "suspense,rir",
+      "classificacao": "14",
+      "plataformas": [
+        "Prime Video"
+      ],
+      "sinopse": "A morte de um escritor rico coloca toda a família sob suspeita."
+    },
+    {
+      "titulo": "Garota Exemplar",
+      "tipo": "filme",
+      "ano": 2014,
+      "duracao_min": 149,
+      "generos": "suspense,drama",
+      "vibes": "suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "O sumiço de uma mulher transforma o marido no principal suspeito diante da mídia."
+    },
+    {
+      "titulo": "Corra!",
+      "tipo": "filme",
+      "ano": 2017,
+      "duracao_min": 104,
+      "generos": "terror,suspense",
+      "vibes": "suspense",
+      "classificacao": "14",
+      "plataformas": [
+        "Netflix",
+        "Prime Video"
+      ],
+      "sinopse": "Um jovem visita a família da namorada e percebe que algo muito estranho acontece na casa."
+    },
+    {
+      "titulo": "Um Lugar Silencioso",
+      "tipo": "filme",
+      "ano": 2018,
+      "duracao_min": 90,
+      "generos": "terror,ficção científica",
+      "vibes": "suspense",
+      "classificacao": "14",
+      "plataformas": [
+        "Paramount+",
+        "Prime Video"
+      ],
+      "sinopse": "Uma família sobrevive em silêncio absoluto num mundo dominado por criaturas que caçam pelo som."
+    },
+    {
+      "titulo": "Parasita",
+      "tipo": "filme",
+      "ano": 2019,
+      "duracao_min": 132,
+      "generos": "drama,suspense",
+      "vibes": "suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "HBO Max"
+      ],
+      "sinopse": "Uma família pobre se infiltra, um a um, nos empregos da casa de uma família rica."
+    },
+    {
+      "titulo": "Ilha do Medo",
+      "tipo": "filme",
+      "ano": 2010,
+      "duracao_min": 138,
+      "generos": "suspense,mistério",
+      "vibes": "suspense",
+      "classificacao": "16",
+      "plataformas": [
+        "Paramount+"
+      ],
+      "sinopse": "Um agente federal investiga o sumiço de uma paciente num hospital psiquiátrico isolado."
+    },
+    {
+      "titulo": "Duna",
+      "tipo": "filme",
+      "ano": 2021,
+      "duracao_min": 155,
+      "generos": "ficção científica,aventura",
+      "vibes": "suspense",
+      "classificacao": "14",
+      "plataformas": [
+        "HBO Max"
+      ],
+      "sinopse": "O herdeiro de uma família nobre é enviado ao planeta desértico mais perigoso do universo."
+    },
+    {
+      "titulo": "Interestelar",
+      "tipo": "filme",
+      "ano": 2014,
+      "duracao_min": 169,
+      "generos": "ficção científica,drama",
+      "vibes": "emocao,suspense",
+      "classificacao": "10",
+      "plataformas": [
+        "Prime Video",
+        "Paramount+"
+      ],
+      "sinopse": "Astronautas atravessam um buraco de minhoca em busca de um novo lar para a humanidade."
+    },
+    {
+      "titulo": "Oppenheimer",
+      "tipo": "filme",
+      "ano": 2023,
+      "duracao_min": 180,
+      "generos": "drama,histórico",
+      "vibes": "suspense,emocao",
+      "classificacao": "16",
+      "plataformas": [
+        "Prime Video"
+      ],
+      "sinopse": "A trajetória do físico que liderou o projeto da primeira bomba atômica."
+    },
+    {
+      "titulo": "Ainda Estou Aqui",
+      "tipo": "filme",
+      "ano": 2024,
+      "duracao_min": 137,
+      "generos": "drama,histórico",
+      "vibes": "emocao",
+      "classificacao": "14",
+      "plataformas": [
+        "Globoplay"
+      ],
+      "sinopse": "Uma mãe reconstrói a vida da família após o desaparecimento do marido durante a ditadura."
+    },
+    {
+      "titulo": "Central do Brasil",
+      "tipo": "filme",
+      "ano": 1998,
+      "duracao_min": 113,
+      "generos": "drama",
+      "vibes": "emocao",
+      "classificacao": "12",
+      "plataformas": [
+        "Globoplay"
+      ],
+      "sinopse": "Uma escrevedora de cartas acompanha um menino pelo sertão em busca do pai dele."
+    },
+    {
+      "titulo": "Extraordinário",
+      "tipo": "filme",
+      "ano": 2017,
+      "duracao_min": 113,
+      "generos": "drama,família",
+      "vibes": "emocao,leve",
+      "classificacao": "L",
+      "plataformas": [
+        "Prime Video"
+      ],
+      "sinopse": "Um menino com uma síndrome facial frequenta a escola pela primeira vez."
+    },
+    {
+      "titulo": "À Procura da Felicidade",
+      "tipo": "filme",
+      "ano": 2006,
+      "duracao_min": 117,
+      "generos": "drama,biografia",
+      "vibes": "emocao",
+      "classificacao": "L",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Um pai sem dinheiro e sem casa luta por uma vaga de estágio enquanto cuida do filho."
+    },
+    {
+      "titulo": "Como Eu Era Antes de Você",
+      "tipo": "filme",
+      "ano": 2016,
+      "duracao_min": 110,
+      "generos": "romance,drama",
+      "vibes": "emocao",
+      "classificacao": "12",
+      "plataformas": [
+        "HBO Max"
+      ],
+      "sinopse": "Uma jovem cuidadora transforma a vida de um homem que ficou tetraplégico após um acidente."
+    },
+    {
+      "titulo": "Questão de Tempo",
+      "tipo": "filme",
+      "ano": 2013,
+      "duracao_min": 123,
+      "generos": "romance,comédia,fantasia",
+      "vibes": "emocao,leve",
+      "classificacao": "12",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Um jovem descobre que pode voltar no tempo e usa o dom para conquistar o amor da sua vida."
+    },
+    {
+      "titulo": "La La Land",
+      "tipo": "filme",
+      "ano": 2016,
+      "duracao_min": 128,
+      "generos": "romance,musical",
+      "vibes": "emocao,leve",
+      "classificacao": "L",
+      "plataformas": [
+        "Prime Video"
+      ],
+      "sinopse": "Um pianista e uma aspirante a atriz se apaixonam enquanto perseguem seus sonhos em Los Angeles."
+    },
+    {
+      "titulo": "Orgulho e Preconceito",
+      "tipo": "filme",
+      "ano": 2005,
+      "duracao_min": 129,
+      "generos": "romance,drama",
+      "vibes": "leve,emocao",
+      "classificacao": "L",
+      "plataformas": [
+        "Netflix",
+        "Prime Video"
+      ],
+      "sinopse": "Elizabeth Bennet e o orgulhoso Sr. Darcy se desentendem até descobrirem o que sentem."
+    },
+    {
+      "titulo": "O Diabo Veste Prada",
+      "tipo": "filme",
+      "ano": 2006,
+      "duracao_min": 109,
+      "generos": "comédia,drama",
+      "vibes": "leve,rir",
+      "classificacao": "10",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "Uma jornalista recém-formada vira assistente da editora mais temida do mundo da moda."
+    },
+    {
+      "titulo": "Mamma Mia!",
+      "tipo": "filme",
+      "ano": 2008,
+      "duracao_min": 108,
+      "generos": "musical,comédia,romance",
+      "vibes": "leve,rir",
+      "classificacao": "L",
+      "plataformas": [
+        "Prime Video"
+      ],
+      "sinopse": "Às vésperas do casamento, uma noiva convida três homens que podem ser seu pai para uma ilha grega."
+    },
+    {
+      "titulo": "Chef",
+      "tipo": "filme",
+      "ano": 2014,
+      "duracao_min": 114,
+      "generos": "comédia,drama",
+      "vibes": "leve",
+      "classificacao": "12",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Um chef demitido monta um food truck e cruza o país com o filho reconstruindo a carreira."
+    },
+    {
+      "titulo": "Paddington 2",
+      "tipo": "filme",
+      "ano": 2017,
+      "duracao_min": 103,
+      "generos": "família,comédia",
+      "vibes": "leve,rir",
+      "classificacao": "L",
+      "plataformas": [
+        "Prime Video"
+      ],
+      "sinopse": "O ursinho mais educado de Londres é acusado injustamente de um roubo e vai parar na prisão."
+    },
+    {
+      "titulo": "Moana",
+      "tipo": "filme",
+      "ano": 2016,
+      "duracao_min": 107,
+      "generos": "animação,aventura,musical",
+      "vibes": "leve,emocao",
+      "classificacao": "L",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "Uma jovem navegadora atravessa o oceano com um semideus para salvar sua ilha."
+    },
+    {
+      "titulo": "O Senhor dos Anéis: A Sociedade do Anel",
+      "tipo": "filme",
+      "ano": 2001,
+      "duracao_min": 178,
+      "generos": "fantasia,aventura",
+      "vibes": "suspense,emocao",
+      "classificacao": "12",
+      "plataformas": [
+        "HBO Max",
+        "Prime Video"
+      ],
+      "sinopse": "Um hobbit parte numa jornada para destruir um anel que pode escravizar a Terra-média."
+    },
+    {
+      "titulo": "Homem-Aranha no Aranhaverso",
+      "tipo": "filme",
+      "ano": 2018,
+      "duracao_min": 117,
+      "generos": "animação,ação,super-herói",
+      "vibes": "rir,emocao",
+      "classificacao": "10",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Um adolescente do Brooklyn vira Homem-Aranha e conhece versões do herói de outras dimensões."
+    },
+    {
+      "titulo": "Top Gun: Maverick",
+      "tipo": "filme",
+      "ano": 2022,
+      "duracao_min": 131,
+      "generos": "ação,drama",
+      "vibes": "suspense,emocao",
+      "classificacao": "12",
+      "plataformas": [
+        "Paramount+"
+      ],
+      "sinopse": "Um piloto veterano treina uma nova geração para uma missão quase impossível."
+    },
+    {
+      "titulo": "Tudo em Todo o Lugar ao Mesmo Tempo",
+      "tipo": "filme",
+      "ano": 2022,
+      "duracao_min": 139,
+      "generos": "ficção científica,comédia,drama",
+      "vibes": "rir,emocao",
+      "classificacao": "14",
+      "plataformas": [
+        "Prime Video"
+      ],
+      "sinopse": "Uma dona de lavanderia descobre que precisa salvar o multiverso enquanto resolve problemas de família."
+    },
+    {
+      "titulo": "Wall-E",
+      "tipo": "filme",
+      "ano": 2008,
+      "duracao_min": 98,
+      "generos": "animação,ficção científica,família",
+      "vibes": "emocao,leve",
+      "classificacao": "L",
+      "plataformas": [
+        "Disney+"
+      ],
+      "sinopse": "Um robozinho solitário que limpa a Terra se apaixona por uma robô exploradora."
+    },
+    {
+      "titulo": "Our Planet",
+      "tipo": "serie",
+      "ano": 2019,
+      "duracao_min": 50,
+      "generos": "documentário,natureza",
+      "vibes": "leve",
+      "classificacao": "L",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Série documental que mostra a vida selvagem nos diferentes ecossistemas do planeta."
+    },
+    {
+      "titulo": "Chef's Table",
+      "tipo": "serie",
+      "ano": 2015,
+      "duracao_min": 50,
+      "generos": "documentário,culinária",
+      "vibes": "leve",
+      "classificacao": "L",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Cada episódio acompanha a história e a cozinha de um chef renomado."
+    },
+    {
+      "titulo": "The Great British Bake Off",
+      "tipo": "serie",
+      "ano": 2010,
+      "duracao_min": 60,
+      "generos": "reality,culinária",
+      "vibes": "leve",
+      "classificacao": "L",
+      "plataformas": [
+        "Netflix"
+      ],
+      "sinopse": "Confeiteiros amadores competem em provas de bolos, pães e doces."
+    }
+  ]
+}

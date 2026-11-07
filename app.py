@@ -7,7 +7,6 @@ Projeto Integrador: Laboratório de Programação — UNISA.
 Para executar:  python app.py   e abra http://127.0.0.1:5000
 Usuário de demonstração: demo@streamsmart.com / demo123
 """
-import calendar
 import math
 import os
 import secrets
@@ -75,6 +74,18 @@ def duracao(minutos):
 def iniciais(texto):
     palavras = [p for p in texto.replace(":", " ").split() if p[0].isalnum()]
     return "".join(p[0] for p in palavras[:2]).upper()
+
+
+@app.template_filter("texto_sobre")
+def texto_sobre(cor):
+    """Escolhe texto escuro ou claro para ficar legível sobre a cor da plataforma (luminância relativa)."""
+    try:
+        r, g, b = (int(cor.lstrip("#")[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    except (ValueError, AttributeError):
+        return "#fff"
+    lin = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in (r, g, b)]
+    luminancia = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+    return "#16171B" if luminancia > 0.28 else "#fff"
 
 
 @app.template_filter("estrelas")
@@ -207,26 +218,15 @@ def redefinir(token):
     return render_template("redefinir.html", token=token)
 
 
-# ------------------------------------------------------------------ gráficos (SVG gerado no servidor)
-def fatias_svg(fatias, raio=80, centro=100):
-    """Converte percentuais em caminhos SVG de um gráfico de rosca/pizza."""
-    resultado, angulo = [], -math.pi / 2
-    for f in fatias:
-        varredura = f["pct"] / 100 * 2 * math.pi
-        if f["pct"] >= 99.999:
-            caminho = (f"M {centro} {centro - raio} A {raio} {raio} 0 1 1 {centro - 0.01} {centro - raio} Z")
-        else:
-            x1, y1 = centro + raio * math.cos(angulo), centro + raio * math.sin(angulo)
-            angulo2 = angulo + varredura
-            x2, y2 = centro + raio * math.cos(angulo2), centro + raio * math.sin(angulo2)
-            grande = 1 if varredura > math.pi else 0
-            caminho = f"M {centro} {centro} L {x1:.2f} {y1:.2f} A {raio} {raio} 0 {grande} 1 {x2:.2f} {y2:.2f} Z"
-        resultado.append({**f, "caminho": caminho})
-        angulo += varredura
-    return resultado
+# ------------------------------------------------------------------ painel (início)
+# Plataformas tratadas no feminino, para as frases saírem em bom português ("da Netflix", "do Prime Video")
+FEMININAS = {"Netflix", "HBO Max", "Apple TV+"}
 
 
-# ------------------------------------------------------------------ painel (dashboard)
+def de(plataforma):
+    return ("da " if plataforma in FEMININAS else "do ") + plataforma
+
+
 @app.route("/painel")
 @login_obrigatorio
 def painel():
@@ -237,27 +237,57 @@ def painel():
         a["valor_mensal"] = custos.valor_mensal(a)
         a["proximo"] = custos.proximo_vencimento(a, d)
         a["dias"] = (a["proximo"] - d).days
-    alertas = custos.alertas(assinaturas, d)
-    ids_alerta = {al["assinatura"]["id"]: al for al in alertas}
-    cobrancas = custos.cobrancas_do_mes(assinaturas, d)
-    # calendário do mês: espaços vazios até o 1º dia (semana começa no domingo) e os dias com cobrança
-    inicio_vazio = (date(d.year, d.month, 1).weekday() + 1) % 7
-    _, dias_mes = calendar.monthrange(d.year, d.month)
-    por_dia = {}
-    for c in cobrancas:
-        por_dia.setdefault(c["dia"], []).append(c)
-    pagantes = [a for a in assinaturas if a["valor"] > 0]
-    proxima = min(pagantes, key=lambda a: a["dias"]) if pagantes else None
-    return render_template(
-        "painel.html",
-        resumo=custos.resumo(assinaturas),
-        mais_assistida=relatorio.mais_assistida(historico, d),
-        assinaturas=assinaturas, alertas=alertas, ids_alerta=ids_alerta, proxima=proxima,
-        fatias=fatias_svg(custos.fatias_pizza(assinaturas)),
-        cobrancas=cobrancas, por_dia=por_dia, inicio_vazio=inicio_vazio,
-        dias_mes=dias_mes, hoje=d, mes_nome=MESES[d.month - 1],
-        cores={a["plataforma"]: a["cor"] for a in assinaturas},
-    )
+    resumo = custos.resumo(assinaturas)
+    analise = relatorio.analisar(assinaturas, historico, d)
+
+    # extrato: cada assinatura com custo, uso e custo por hora, da mais cara para a mais barata
+    max_horas = max([l["horas"] for l in analise["linhas"]] + [1])
+    extrato = sorted(analise["linhas"], key=lambda l: -l["custo_mensal"])
+    for l in extrato:
+        l["uso_pct"] = round(l["horas"] / max_horas * 100)
+
+    # no máximo 2 avisos, do mais importante para o menos: assinatura parada, depois a próxima cobrança
+    notas = []
+    for l in analise["linhas"]:
+        if l["status"] == "pausar":
+            p, dias = l["assinatura"]["plataforma"], l["dias_sem_uso"]
+            if dias is None:
+                parado = "sem nenhum uso registrado"
+            elif dias >= 60:
+                parado = f"sem uso há {dias // 30} meses"
+            else:
+                parado = f"sem uso há {dias} dias"
+            notas.append({"cor": l["assinatura"]["cor"], "link": url_for("relatorio_view"), "acao": "Ver custo-benefício",
+                          "texto": f"{p} {parado}: pausar economiza {moeda(l['custo_mensal'] * 12)} por ano."})
+            break
+    for al in custos.alertas(assinaturas, d):
+        a = al["assinatura"]
+        quando = "hoje" if al["dias"] == 0 else ("amanhã" if al["dias"] == 1 else f"em {al['dias']} dias")
+        texto = (f"Teste grátis {de(a['plataforma'])} termina {quando}." if al["tipo"] == "teste"
+                 else f"{a['plataforma']} renova {quando}, {moeda(a['valor'])}.")
+        notas.append({"cor": a["cor"], "texto": texto})
+        break
+    notas = notas[:2]
+
+    # faixa do mês: proporção de cada plataforma no gasto
+    total = resumo["total_mensal"] or 1
+    faixa = [{"nome": a["plataforma"], "cor": a["cor"], "valor": a["valor_mensal"], "pct": a["valor_mensal"] / total * 100}
+             for a in sorted(assinaturas, key=lambda a: -a["valor_mensal"]) if a["valor_mensal"] > 0]
+
+    # para hoje à noite: o que mais combina, só nas assinaturas do usuário, sem repetir o já visto
+    assinadas = {a["plataforma"] for a in assinaturas}
+    vistos = {h["titulo_id"] for h in historico}
+    sugestoes = []
+    if assinadas:
+        candidatos = recomendador.recomendar(
+            repo.listar_catalogo(db()),
+            {"tempo": "livre", "vibes": [], "companhia": "sozinho", "classificacao_max": "18", "somente_minhas": True,
+             "ordenar": "compat"},
+            assinadas, vistos, repo.notas_amigos(db(), uid()))
+        sugestoes = [c for c in candidatos if c["id"] not in vistos][:6]
+
+    return render_template("painel.html", resumo=resumo, assinaturas=assinaturas, extrato=extrato, notas=notas,
+                           faixa=faixa, sugestoes=sugestoes, mes_nome=MESES[d.month - 1], hoje=d)
 
 
 # ------------------------------------------------------------------ assinaturas (RF02)

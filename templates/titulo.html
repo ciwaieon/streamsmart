@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_macros.html" import capa, classif, avatar, estrelas_form %}
+{% block titulo %}{{ t.titulo }}{% endblock %}
+{% block conteudo %}
+<p><a href="javascript:history.back()">Voltar</a></p>
+<article class="ficha bloco">
+  <div class="poster">{{ capa(t, (t.plataformas[0].cor if t.plataformas else None)) }}</div>
+  <div>
+    <h1>{{ t.titulo }}</h1>
+    <div class="meta">
+      <span>{{ 'Série' if t.tipo == 'serie' else 'Filme' }}{% if t.ano %}, {{ t.ano }}{% endif %}</span>
+      <span>{{ (t.duracao_min|duracao) ~ (' por episódio' if t.tipo == 'serie' else '') }}</span>
+      {{ classif(t.classificacao) }}
+      {% if t.nota_tmdb %}<span title="Nota média no TMDB">TMDB {{ t.nota_tmdb|decimal }}</span>{% endif %}
+      {% if media_amigos %}<span class="estrelas" title="Média dos seus amigos">{{ media_amigos|estrelas }}</span>{% endif %}
+    </div>
+    <p class="suave">{{ t.generos|map('capitalize')|join(', ') }}</p>
+    <p class="sinopse">{{ t.sinopse }}</p>
+
+    <div class="lista-plataformas">
+      {% for p in t.plataformas %}
+      <span class="plat {{ 'minha' if p.nome in assinadas }}"><span class="ponto" style="background: {{ p.cor }}"></span>{{ p.nome }}{{ ', no seu plano' if p.nome in assinadas }}</span>
+      {% else %}<span class="suave">Sem plataforma de assinatura no Brasil no momento.</span>
+      {% endfor %}
+    </div>
+
+    {% if t.plataformas %}
+    <form method="post" action="{{ url_for('historico') }}" class="opcoes" style="align-items:center;gap:.6rem">
+      <input type="hidden" name="titulo_id" value="{{ t.id }}">
+      <input type="hidden" name="voltar" value="{{ url_for('titulo', tid=t.id) }}">
+      <select name="plataforma_id" aria-label="Plataforma em que assistiu" style="width:auto">
+        {% for p in t.plataformas %}<option value="{{ p.id }}" {{ 'selected' if p.nome in assinadas }}>{{ p.nome }}</option>{% endfor %}
+      </select>
+      <button class="botao botao-claro" type="submit">Marcar como assistido hoje</button>
+      {% if vezes %}<span class="suave pequeno">Você já registrou {{ vezes|length }} vez{{ 'es' if vezes|length > 1 }}, a última em {{ vezes[0].data|data_br }}.</span>{% endif %}
+    </form>
+    {% endif %}
+  </div>
+</article>
+
+<div class="grade-amigos">
+  <section class="folha">
+    <h2>Sua avaliação</h2>
+    <form method="post" action="{{ url_for('avaliar', tid=t.id) }}" class="formulario">
+      {{ estrelas_form('nota', minha.nota if minha else 0, 'minha') }}
+      <label><span>Comentário <span class="suave">(opcional)</span></span>
+        <textarea name="comentario" maxlength="500" placeholder="O que achou? Seus amigos vão ver.">{{ minha.comentario or '' if minha else '' }}</textarea></label>
+      <div class="acoes-form" style="justify-content:flex-start">
+        <button class="botao" type="submit">{{ 'Atualizar avaliação' if minha else 'Salvar avaliação' }}</button>
+      </div>
+    </form>
+    {% if minha %}
+    <form method="post" action="{{ url_for('excluir_avaliacao', tid=t.id) }}" style="margin-top:.75rem">
+      <button class="botao-texto" type="submit">Apagar minha avaliação</button>
+    </form>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>O que seus amigos acharam</h2>
+    {% if dos_amigos %}
+    <ul class="opinioes sobre-azul">
+      {% for a in dos_amigos %}
+      <li>{{ avatar(a.nome) }}
+        <div>
+          <div class="quem"><strong>{{ a.nome }}</strong><span class="estrelas" aria-label="{{ a.nota }} de 5 estrelas">{{ a.nota|estrelas }}</span></div>
+          {% if a.comentario %}<p>{{ a.comentario }}</p>{% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="suave">Nenhum amigo avaliou este título ainda. <a href="{{ url_for('amigos') }}">Adicione amigos</a> para ver as notas deles.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

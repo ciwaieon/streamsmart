@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block titulo %}Assista ao que importa, controle o que gasta{% endblock %}
+{% block corpo %}
+<div class="landing">
+  <header class="landing-topo">
+    <a class="logo" href="{{ url_for('landing') }}">{% include "_logo.html" %}<span class="logo-nome">StreamSmart</span></a>
+    <nav>
+      <a href="{{ url_for('login') }}">Entrar</a>
+      <a class="botao botao-claro botao-pequeno" href="{{ url_for('cadastro') }}">Criar conta</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1>Assista ao que importa, controle o que gasta.</h1>
+      <p>Você diz quanto tempo tem e qual é a vibe da noite. O StreamSmart mostra o que assistir nos streamings que você já paga e avisa quando uma assinatura não está valendo o preço.</p>
+      <div class="hero-acoes">
+        <a class="botao" href="{{ url_for('cadastro') }}">Criar minha conta</a>
+        <a class="botao botao-linha" href="{{ url_for('login') }}">Entrar com a conta de demonstração</a>
+      </div>
+      <p class="pequeno">Demonstração: demo@streamsmart.com, senha demo123</p>
+    </div>
+
+    <div class="hero-palco" aria-hidden="true">
+      <div class="ingresso">
+        <div class="ingresso-corpo">
+          <span class="rotulo">Você gasta por mês</span>
+          <span class="valor-grande">R$ 135,60</span>
+          <p>São R$ 1.627,20 por ano. A HBO Max está sem uso há 2 meses.</p>
+        </div>
+        <div class="ingresso-canhoto">
+          <span class="rotulo">Próxima cobrança</span>
+          <span class="valor-medio">Netflix</span>
+          <span>em 2 dias, R$ 44,90</span>
+        </div>
+      </div>
+      <div class="vibes-amostra">
+        {% for chave, v in vibes.items() %}<span class="{{ 'marcada' if chave in ('rir', 'tensao') }}">{{ v.rotulo }}</span>{% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section class="faixa-recursos">
+    <article>
+      <h2>Quanto custa cada hora</h2>
+      <p>Total do mês, projeção do ano e o custo por hora que você realmente assistiu em cada plataforma.</p>
+    </article>
+    <article>
+      <h2>A sessão certa para hoje</h2>
+      <p>Filtre por tempo, vibe, categoria, classificação e plataforma, com milhares de títulos do TMDB.</p>
+    </article>
+    <article>
+      <h2>O que seus amigos acharam</h2>
+      <p>Avalie o que assistiu, adicione amigos e veja as notas deles antes de dar o play.</p>
+    </article>
+  </section>
+  {% include "_rodape.html" %}
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar' if editando else 'Nova' }} assinatura{% endblock %}
+{% block conteudo %}
+<div class="topo-pagina"><h1>{{ 'Editar' if editando else 'Nova' }} assinatura</h1></div>
+<div class="folha caixa-media">
+  <form method="post" class="formulario">
+    <label>Plataforma
+      <select name="plataforma_id" required>
+        <option value="">Selecione…</option>
+        {% for p in plataformas %}
+        <option value="{{ p.id }}" {{ 'selected' if a.plataforma_id|string == p.id|string }}>{{ p.nome }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Plano <input type="text" name="plano" value="{{ a.plano or '' }}" placeholder="Ex.: Padrão, Premium, Com anúncios"></label>
+    <div class="linha-campos">
+      <label>Valor (R$) <input type="text" name="valor" inputmode="decimal" required
+             value="{% if a.valor is number %}{{ ('%.2f'|format(a.valor)).replace('.', ',') }}{% else %}{{ a.valor or '' }}{% endif %}" placeholder="39,90"></label>
+      <label>Cobrança
+        <select name="periodicidade" id="periodicidade">
+          <option value="mensal" {{ 'selected' if a.periodicidade != 'anual' }}>Mensal</option>
+          <option value="anual" {{ 'selected' if a.periodicidade == 'anual' }}>Anual</option>
+        </select>
+      </label>
+    </div>
+    <div class="linha-campos">
+      <label>Dia do vencimento <input type="number" name="dia_vencimento" min="1" max="31" required value="{{ a.dia_vencimento or '' }}"></label>
+      <label id="campo-mes">Mês da renovação
+        <select name="mes_vencimento">
+          <option value="">—</option>
+          {% for m in meses %}<option value="{{ loop.index }}" {{ 'selected' if a.mes_vencimento|string == loop.index|string }}>{{ m|capitalize }}</option>{% endfor %}
+        </select>
+      </label>
+    </div>
+    <label>Fim do teste grátis (opcional) <input type="date" name="fim_teste" value="{{ a.fim_teste or '' }}"></label>
+    <div class="acoes-form">
+      <a class="botao botao-linha" href="{{ url_for('assinaturas') }}">Cancelar</a>
+      <button class="botao" type="submit">Salvar</button>
+    </div>
+  </form>
+</div>
+<script>
+  // Mostra o campo "mês da renovação" apenas para planos anuais
+  const per = document.getElementById('periodicidade'), mes = document.getElementById('campo-mes');
+  function atualizar() { mes.style.visibility = per.value === 'anual' ? 'visible' : 'hidden'; }
+  per.addEventListener('change', atualizar); atualizar();
+</script>
+{% endblock %}

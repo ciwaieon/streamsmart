@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block titulo %}Catálogo TMDB{% endblock %}
+{% block conteudo %}
+<div class="topo-pagina">
+  <div>
+    <h1>Catálogo de filmes e séries</h1>
+    <p>Conecte o StreamSmart ao TMDB para importar os títulos disponíveis nas plataformas brasileiras, com pôster, sinopse em português, duração e classificação indicativa.</p>
+  </div>
+</div>
+
+<section class="ingresso bloco">
+  <div class="ingresso-corpo">
+    <span class="rotulo">Títulos no catálogo</span>
+    <span class="valor-grande">{{ '{:,}'.format(contagem.total).replace(',', '.') }}</span>
+    <span>{{ contagem.filmes }} filmes e {{ contagem.series }} séries{% if contagem.tmdb %}, {{ contagem.tmdb }} com dados do TMDB{% endif %}.</span>
+  </div>
+  <div class="ingresso-canhoto">
+    <span class="rotulo">Última importação</span>
+    <span class="valor-medio">{{ ultima or 'Nunca' }}</span>
+  </div>
+</section>
+
+<div class="grade-amigos">
+  <section class="folha">
+    <h2>1. Chave da API</h2>
+    {% if tem_chave %}<p><span class="selo selo-manter">Chave salva e conferida</span></p>{% endif %}
+    <form method="post" class="formulario">
+      <input type="hidden" name="acao" value="salvar">
+      <label>Chave da API (v3) ou token de leitura (v4)
+        <input type="password" name="chave" required autocomplete="off" placeholder="{{ 'Cole uma nova chave para trocar' if tem_chave else 'Cole aqui a chave do TMDB' }}"></label>
+      <button class="botao" type="submit">Conferir e salvar</button>
+    </form>
+    <h3 style="margin-top:1.5rem">Como conseguir a chave (grátis)</h3>
+    <ol>
+      <li>Crie uma conta em <a href="https://www.themoviedb.org/signup" target="_blank" rel="noopener">themoviedb.org</a> e confirme o e-mail.</li>
+      <li>Entre em <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">Configurações, API</a> e peça uma chave do tipo uso pessoal ou educacional.</li>
+      <li>Copie a <strong>Chave da API</strong> (ou o <strong>Token de leitura da API</strong>) e cole aqui.</li>
+    </ol>
+  </section>
+
+  <section class="folha">
+    <h2>2. Importar títulos</h2>
+    {% if tem_chave %}
+    <form method="post" class="formulario" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Importando, aguarde…'">
+      <input type="hidden" name="acao" value="importar">
+      <label>Quantidade por plataforma
+        <select name="paginas">
+          <option value="1">Pouco (até 40 por plataforma, cerca de 20 segundos)</option>
+          <option value="3" selected>Médio (até 120 por plataforma, cerca de 1 minuto)</option>
+          <option value="6">Muito (até 240 por plataforma, 2 a 3 minutos)</option>
+          <option value="10">Máximo (até 400 por plataforma, 4 a 5 minutos)</option>
+        </select></label>
+      <button class="botao" type="submit">Importar do TMDB</button>
+    </form>
+    <p class="suave pequeno" style="margin-top:1rem">São importados os títulos mais populares de cada plataforma, disponíveis por assinatura no Brasil. Rodar de novo atualiza a lista (os catálogos mudam toda semana). Seu histórico e suas avaliações são mantidos.</p>
+    {% else %}
+    <p class="suave">Salve a chave da API primeiro.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "entrada_base.html" %}
+{% block titulo %}Recuperar senha{% endblock %}
+{% block formulario %}
+<h1>Recuperar senha</h1>
+<p>Informe seu e-mail para receber um link de redefinição.</p>
+<form method="post" class="formulario">
+  <label>E-mail <input type="email" name="email" required autofocus></label>
+  <button class="botao" type="submit">Enviar link</button>
+</form>
+{% if link %}
+<div class="email-simulado">
+  <strong>E-mail simulado (protótipo)</strong>
+  <p>Em produção, este link seria enviado para a sua caixa de entrada:</p>
+  <a href="{{ link }}">{{ link }}</a>
+</div>
+{% endif %}
+<p style="margin-top:1.25rem"><a href="{{ url_for('login') }}">Voltar para o login</a></p>
+{% endblock %}

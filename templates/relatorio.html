@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block titulo %}Custo-benefício{% endblock %}
+{% block conteudo %}
+<div class="topo-pagina">
+  <div>
+    <h1>Custo-benefício</h1>
+    <p>Quanto custou cada hora que você assistiu nos últimos {{ r.janela }} dias, cruzando o seu histórico com o valor de cada assinatura.</p>
+  </div>
+</div>
+
+{% if r.linhas %}
+  {% if r.economia_mensal > 0 %}
+  <section class="ingresso economia">
+    <div class="ingresso-corpo">
+      <span class="rotulo">Pausando o que você não usa, sobram</span>
+      <span class="valor-grande">{{ r.economia_anual|moeda }}</span>
+      <span>por ano, ou {{ r.economia_mensal|moeda }} por mês.</span>
+    </div>
+    <div class="ingresso-canhoto">
+      <span class="rotulo">Sem uso no período</span>
+      {% for l in r.linhas if l.status == 'pausar' %}<span class="valor-medio">{{ l.assinatura.plataforma }}</span>{% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="folha">
+  {% for l in r.linhas %}
+    <article class="linha-relatorio">
+      <div>
+        <h3 style="margin:0 0 .3rem"><span class="ponto" style="background: {{ l.assinatura.cor }};margin-right:.45rem"></span>{{ l.assinatura.plataforma }}</h3>
+        <span class="selo selo-{{ {'pausar': 'pausar', 'avaliar': 'avaliar', 'teste': 'teste', 'manter': 'manter'}[l.status] }}">{{ {'pausar': 'Sugerimos pausar', 'avaliar': 'Vale reavaliar', 'teste': 'Teste grátis', 'manter': 'Vale o que custa'}[l.status] }}</span>
+      </div>
+      <div class="numero">{{ l.custo_mensal|moeda }}<small>por mês</small></div>
+      <div class="numero">{{ l.horas|decimal }} h<small>assistidas</small></div>
+      <div class="numero">{{ l.titulos }}<small>título{{ 's' if l.titulos != 1 }}</small></div>
+      <div class="numero">{{ l.custo_hora|moeda if l.custo_hora is not none else 'sem uso' }}<small>por hora</small></div>
+      <p class="sugestao">{{ l.sugestao }}</p>
+    </article>
+  {% endfor %}
+  </section>
+{% else %}
+<div class="vazio"><h2>Ainda não há o que comparar</h2><p>Cadastre suas assinaturas e registre o que assistiu para ver o custo por hora.</p>
+  <a class="botao" href="{{ url_for('nova_assinatura') }}">Cadastrar assinatura</a></div>
+{% endif %}
+{% endblock %}

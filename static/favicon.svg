@@ -1,0 +1,17 @@
+<svg viewBox="0 0 64 44" role="img" aria-label="StreamSmart" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <mask id="p">
+      <rect width="64" height="44" fill="#fff"/>
+      <circle cx="0" cy="22" r="6" fill="#000"/>
+      <circle cx="64" cy="22" r="6" fill="#000"/>
+      <circle cx="44" cy="0" r="3.2" fill="#000"/>
+      <circle cx="44" cy="44" r="3.2" fill="#000"/>
+    </mask>
+  </defs>
+  <rect x="0" y="0" width="64" height="44" rx="6" fill="#D5B893" mask="url(#p)"/>
+  <line x1="44" y1="6" x2="44" y2="38" stroke="#8A7458" stroke-width="1.6" stroke-dasharray="2.2 2.6" stroke-linecap="round"/>
+  <path d="M17 13.5 L33 22 L17 30.5 Z" fill="#1C1B19" stroke="#1C1B19" stroke-width="2.4" stroke-linejoin="round"/>
+  <circle cx="54" cy="17" r="1.9" fill="#1C1B19"/>
+  <circle cx="54" cy="22" r="1.9" fill="#1C1B19"/>
+  <circle cx="54" cy="27" r="1.9" fill="#1C1B19"/>
+</svg>

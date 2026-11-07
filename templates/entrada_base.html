@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block corpo %}
+<div class="tela-entrada">
+  <div class="lado-marca">
+    <a class="logo" href="{{ url_for('landing') }}">{% include "_logo.html" %}<span class="logo-nome">StreamSmart</span></a>
+    <blockquote>{% block frase %}Menos tempo escolhendo, menos dinheiro parado.{% endblock %}</blockquote>
+    <p class="suave pequeno">Projeto Integrador, UNISA</p>
+  </div>
+  <div class="lado-form">
+    <div class="caixa-estreita" style="width:100%">
+      {% include "_mensagens.html" %}
+      {% block formulario %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

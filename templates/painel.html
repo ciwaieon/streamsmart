@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% from "_macros.html" import capa, classif %}
+{% block titulo %}Início{% endblock %}
+{% block conteudo %}
+
+{% if not assinaturas %}
+<section class="abertura">
+  <p class="saudacao">Olá, {{ usuario_nome.split()[0] }}.</p>
+  <h1>Comece contando quais streamings você assina.</h1>
+  <p class="suave">Com isso, o StreamSmart mostra quanto você gasta, avisa antes das cobranças e sugere o que assistir no que você já paga.</p>
+  <a class="botao" href="{{ url_for('nova_assinatura') }}">Cadastrar a primeira assinatura</a>
+</section>
+{% else %}
+
+<section class="abertura">
+  <p class="saudacao">Olá, {{ usuario_nome.split()[0] }}.</p>
+  <h1>{{ mes_nome|capitalize }} custa <span class="sem-quebra">{{ resumo.total_mensal|moeda }}</span> nos seus streamings.</h1>
+  <p class="suave">{{ resumo.projecao_anual|moeda }} por ano no ritmo atual.</p>
+
+  {% if faixa %}
+  <div class="faixa-mes" role="img" aria-label="Divisão do gasto mensal: {% for f in faixa %}{{ f.nome }} {{ f.valor|moeda }}{{ ', ' if not loop.last }}{% endfor %}">
+    {% for f in faixa %}<span style="flex-basis: {{ f.pct }}%; background: {{ f.cor }}" title="{{ f.nome }}: {{ f.valor|moeda }}"></span>{% endfor %}
+  </div>
+  <ul class="faixa-legenda">
+    {% for f in faixa %}<li><span class="ponto" style="background: {{ f.cor }}"></span>{{ f.nome }} <span class="suave">{{ f.valor|moeda }}</span></li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if notas %}
+  <ul class="notas">
+    {% for n in notas %}
+    <li><span class="ponto" style="background: {{ n.cor }}"></span>
+      <span>{{ n.texto }}{% if n.link %} <a href="{{ n.link }}">{{ n.acao }}</a>{% endif %}</span></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+
+{% if sugestoes %}
+<section class="bloco">
+  <div class="bloco-cabeca">
+    <h2>Para hoje à noite, no que você já paga</h2>
+    <a href="{{ url_for('recomendar') }}">Montar minha sessão</a>
+  </div>
+  <div class="fileira-posters">
+    {% for t in sugestoes %}
+    <a class="filme" href="{{ url_for('titulo', tid=t.id) }}">
+      <div class="poster">{{ capa(t) }}
+        <span class="plataforma-tag">{% for p in t.plataformas if p.nome in assinaturas|map(attribute='plataforma')|list %}{% if loop.first %}<span style="--cor: {{ p.cor }};color: {{ p.cor|texto_sobre }}">{{ p.nome }}</span>{% endif %}{% endfor %}</span>
+      </div>
+      <h3>{{ t.titulo }}</h3>
+      <div class="meta">{{ classif(t.classificacao) }}<span>{{ (t.duracao_min|duracao) ~ (' por ep.' if t.tipo == 'serie' else '') }}</span></div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="bloco">
+  <div class="bloco-cabeca">
+    <h2>Quanto custa e quanto você usa</h2>
+    <a href="{{ url_for('assinaturas') }}">Gerenciar assinaturas</a>
+  </div>
+  <div class="extrato" role="table" aria-label="Assinaturas com custo e uso nos últimos 30 dias">
+    <div class="extrato-linha extrato-cabeca" role="row">
+      <span role="columnheader">Assinatura</span><span role="columnheader">Por mês</span>
+      <span role="columnheader">Uso em 30 dias</span><span role="columnheader">Custo por hora</span><span role="columnheader">Renova</span>
+    </div>
+    {% for l in extrato %}
+    {% set a = l.assinatura %}
+    <div class="extrato-linha" role="row" style="--cor: {{ a.cor }}">
+      <span role="cell" class="extrato-nome"><strong>{{ a.plataforma }}</strong><small>{{ a.plano }}</small></span>
+      <span role="cell" class="extrato-valor">{{ l.custo_mensal|moeda }}</span>
+      <span role="cell" class="extrato-uso">
+        <span class="barra"><span style="width: {{ l.uso_pct }}%"></span></span>
+        <small>{{ l.horas|decimal }} h, {{ l.titulos }} título{{ 's' if l.titulos != 1 }}</small>
+      </span>
+      <span role="cell" class="extrato-hora {{ 'ruim' if l.status in ('pausar', 'avaliar') }}">
+        {% if l.status == 'teste' %}Teste grátis{% elif l.custo_hora is none %}Sem uso{% else %}{{ l.custo_hora|moeda }}{% endif %}
+      </span>
+      <span role="cell" class="extrato-renova {{ 'perto' if a.dias <= 5 }}">{{ 'hoje' if a.dias == 0 else ('amanhã' if a.dias == 1 else 'em ' ~ a.dias ~ ' dias') }}<small>{{ a.proximo|data_br }}</small></span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

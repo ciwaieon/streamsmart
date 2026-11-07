@@ -1,0 +1,14 @@
+{% extends "entrada_base.html" %}
+{% block titulo %}Criar conta{% endblock %}
+{% block frase %}Seus streamings, suas notas e seus amigos num lugar só.{% endblock %}
+{% block formulario %}
+<h1>Criar conta</h1>
+<form method="post" class="formulario">
+  <label>Nome <input type="text" name="nome" value="{{ nome or '' }}" required autofocus autocomplete="name"></label>
+  <label>E-mail <input type="email" name="email" value="{{ email or '' }}" required autocomplete="email"></label>
+  <label>Senha <input type="password" name="senha" minlength="6" required autocomplete="new-password"></label>
+  <label>Confirmar senha <input type="password" name="confirmar" minlength="6" required autocomplete="new-password"></label>
+  <button class="botao" type="submit">Criar conta</button>
+</form>
+<p style="margin-top:1.25rem">Já tem conta? <a href="{{ url_for('login') }}">Entrar</a></p>
+{% endblock %}

@@ -125,9 +125,16 @@ streamsmart/
 
 ## Identidade visual
 
-Paleta: Space Cadet `#25344F`, Slate Gray `#617891`, Tan `#D5B893`, Coffee `#6F4D38` e Caput Mortuum `#632024`.
-O conceito é uma sala de cinema: a interface é a sala escura e as informações importantes aparecem em ingressos.
-Fontes Lora e Inter, ambas sob a licença SIL Open Font License, incluídas em `static/fonts`.
+- Fundo grafite levemente quente, confortável para os olhos e bom para destacar pôsteres.
+- Uma única cor de destaque, o Tan `#D5B893` da paleta do grupo, em botões, seleções e estrelas.
+- Avisos em âmbar suave, sem vermelho.
+- Cada plataforma tem um tom suave da sua família de cor: Netflix rosé `#C47F86`, Prime Video verde-azulado `#5E9E9B`,
+  Disney+ azul-acinzentado `#7F98BE`, HBO Max lavanda `#A08CC4`, Globoplay âmbar `#D0A061`, Apple TV+ cinza-pedra `#A8A49C`
+  e Paramount+ sálvia `#8FAE87`. O texto sobre essas cores fica claro ou escuro automaticamente, conforme o contraste.
+- Classificação indicativa nas cores oficiais brasileiras, em versão suavizada.
+- Tela inicial em texto corrido: o gasto do mês numa frase, até 2 avisos, sugestões para hoje à noite e um extrato
+  que junta custo e uso de cada assinatura.
+- Fontes Lora e Inter, ambas sob a licença SIL Open Font License, incluídas em `static/fonts`.
 
 ## Créditos e limitações
 

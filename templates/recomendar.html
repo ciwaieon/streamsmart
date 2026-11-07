@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% from "_macros.html" import capa, classif %}
+{% block titulo %}O que assistir{% endblock %}
+{% block conteudo %}
+{% set avancados = filtros.categorias|length + filtros.plataformas|length + (1 if filtros.tipo != 'todos' else 0) + (1 if filtros.classificacao_max != '18' else 0) %}
+<div class="topo-pagina">
+  <div>
+    <h1>O que assistir hoje</h1>
+    <p>{% if catalogo.tmdb %}{{ '{:,}'.format(catalogo.total).replace(',', '.') }} filmes e séries do TMDB.
+      {% else %}Catálogo de demonstração com {{ catalogo.total }} títulos. <a href="{{ url_for('catalogo') }}">Importe o TMDB</a> para ter milhares.{% endif %}</p>
+  </div>
+</div>
+
+<form method="get" class="folha sessao-filtros" id="form-sessao" action="{{ url_for('recomendar') }}#resultados">
+  <div class="grupo-filtro">
+    <span class="titulo-filtro">Quanto tempo você tem?</span>
+    <div class="opcoes">
+      {% for chave, rotulo, _ in tempos %}
+      <label class="opcao"><input type="radio" name="tempo" value="{{ chave }}" {{ 'checked' if filtros.tempo == chave }}><span>{{ rotulo }}</span></label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="grupo-filtro">
+    <span class="titulo-filtro">Qual é a vibe?<small>Escolha até 3</small></span>
+    <div class="vibes" id="vibes">
+      {% for chave, v in vibes.items() %}
+      <label class="vibe"><input type="checkbox" name="vibe" value="{{ chave }}" {{ 'checked' if chave in filtros.vibes }}>
+        <span><strong>{{ v.rotulo }}</strong><small>{{ v.descricao }}</small></span></label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="grupo-filtro">
+    <span class="titulo-filtro">Com quem?</span>
+    <div class="opcoes" style="align-items:center;gap:.4rem 1.25rem">
+      <div class="opcoes">
+        {% for chave, rotulo in companhias.items() %}
+        <label class="opcao"><input type="radio" name="companhia" value="{{ chave }}" {{ 'checked' if filtros.companhia == chave }}><span>{{ rotulo }}</span></label>
+        {% endfor %}
+      </div>
+      <label class="interruptor">
+        <input type="checkbox" name="somente" value="1" {{ 'checked' if filtros.somente_minhas }}>
+        <span class="trilha"></span> Só nos streamings que eu assino
+      </label>
+    </div>
+  </div>
+
+  <details class="mais-filtros" {{ 'open' if avancados }}>
+    <summary>Mais filtros <span class="suave">{{ (avancados ~ ' ativo' ~ ('s' if avancados > 1 else '')) if avancados else 'categorias, formato, classificação e plataformas' }}</span></summary>
+    <div class="dentro">
+      <div class="grupo-filtro">
+        <span class="titulo-filtro">Categorias<small>Vazio = todas</small></span>
+        <div class="opcoes">
+          {% for c in lista_categorias %}
+          <label class="opcao"><input type="checkbox" name="categoria" value="{{ c }}" {{ 'checked' if c in filtros.categorias }}><span>{{ c|capitalize }}</span></label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="grupo-filtro">
+        <span class="titulo-filtro">Formato</span>
+        <div class="opcoes">
+          {% for chave, rotulo in tipos.items() %}
+          <label class="opcao"><input type="radio" name="tipo" value="{{ chave }}" {{ 'checked' if filtros.tipo == chave }}><span>{{ rotulo }}</span></label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="grupo-filtro">
+        <span class="titulo-filtro">Classificação<small>Mostrar até</small></span>
+        <div>
+          <div class="opcoes escala">
+            {% for c, descricao in classificacoes.items() %}
+            <label class="opcao" title="{{ descricao }}"><input type="radio" name="classificacao" value="{{ c }}" {{ 'checked' if filtros.classificacao_max == c }}><span>{{ classif(c) }}</span></label>
+            {% endfor %}
+          </div>
+          {% if filtros.companhia == 'criancas' %}<p class="pequeno suave" style="margin:.5rem 0 0">Com crianças, o limite é 10 anos.</p>{% endif %}
+        </div>
+      </div>
+      <div class="grupo-filtro">
+        <span class="titulo-filtro">Plataformas<small>Vazio = todas</small></span>
+        <div class="opcoes">
+          {% for p in plataformas %}
+          <label class="opcao"><input type="checkbox" name="plataforma" value="{{ p.nome }}" {{ 'checked' if p.nome in filtros.plataformas }}>
+            <span><span class="ponto" style="background: {{ p.cor }}"></span>{{ p.nome }}{{ ' (assino)' if p.nome in assinadas }}</span></label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <input type="hidden" name="ordenar" value="{{ filtros.ordenar }}" id="campo-ordenar">
+  <div class="filtros-rodape">
+    <button class="botao" type="submit">Ver recomendações</button>
+    {% if buscou %}<a class="botao-texto" href="{{ url_for('recomendar') }}">Limpar filtros</a>{% endif %}
+  </div>
+</form>
+
+<section id="resultados">
+  {% if not buscou %}
+  <div class="vazio">
+    <h2>Monte a sua sessão</h2>
+    <p>Escolha o tempo e a vibe acima e toque em Ver recomendações. Sem vibe marcada, mostramos tudo o que cabe no seu tempo.</p>
+  </div>
+  {% else %}
+    {% if not assinadas and filtros.somente_minhas %}
+    <div class="msg msg-aviso" style="margin-bottom:1rem">Você ainda não cadastrou assinaturas. <a href="{{ url_for('nova_assinatura') }}">Cadastre uma</a> ou desligue "Só nos streamings que eu assino".</div>
+    {% endif %}
+    <div class="resultado-topo">
+      <h2>{{ '{:,}'.format(total).replace(',', '.') }} título{{ 's' if total != 1 }} para você{% if paginas > 1 %} <span class="suave pequeno" style="font-family:var(--sans);font-weight:400">página {{ pagina }} de {{ paginas }}</span>{% endif %}</h2>
+      {% if total %}
+      <label class="suave pequeno" style="display:flex;align-items:center;gap:.5rem">Ordenar por
+        <select onchange="document.getElementById('campo-ordenar').value=this.value;document.getElementById('form-sessao').submit()">
+          {% for chave, rotulo in ordenacoes.items() %}<option value="{{ chave }}" {{ 'selected' if filtros.ordenar == chave }}>{{ rotulo }}</option>{% endfor %}
+        </select></label>
+      {% endif %}
+    </div>
+
+    {% if resultados %}
+    <div class="cartaz">
+      {% for t in resultados %}
+      <a class="filme" href="{{ url_for('titulo', tid=t.id) }}">
+        <div class="poster">
+          {{ capa(t) }}
+          <span class="compat" title="Compatibilidade com a sua sessão">{{ t.nota|round|int }}%</span>
+          <span class="plataforma-tag">{% for p in t.plataformas[:2] %}<span style="--cor: {{ p.cor }};color: {{ p.cor|texto_sobre }}">{{ p.nome }}</span>{% endfor %}</span>
+        </div>
+        <h3>{{ t.titulo }}</h3>
+        <div class="meta">
+          {{ classif(t.classificacao) }}
+          <span>{{ 'Série' if t.tipo == 'serie' else 'Filme' }}{% if t.ano %}, {{ t.ano }}{% endif %}</span>
+          <span>{{ (t.duracao_min|duracao) ~ (' por ep.' if t.tipo == 'serie' else '') }}</span>
+        </div>
+        {% set extras = t.motivos[1:] if t.no_plano else t.motivos %}
+        {% if extras %}<span class="motivo">{{ extras[0] }}</span>{% endif %}
+        <span class="selo {{ 'selo-plano' if t.no_plano else 'selo-fora' }}">{{ 'No seu plano' if t.no_plano else 'Fora da sua assinatura' }}</span>
+      </a>
+      {% endfor %}
+    </div>
+
+    {% if paginas > 1 %}
+    <nav class="paginacao" aria-label="Páginas de resultados">
+      {% if pagina > 1 %}<a href="{{ link_pagina(pagina - 1) }}">Anterior</a>{% endif %}
+      {% for n in range(1, paginas + 1) %}
+        {% if n == 1 or n == paginas or (n - pagina)|abs <= 2 %}
+          {% if n == pagina %}<span class="atual" aria-current="page">{{ n }}</span>{% else %}<a href="{{ link_pagina(n) }}">{{ n }}</a>{% endif %}
+        {% elif (n - pagina)|abs == 3 %}<span class="reticencias">…</span>{% endif %}
+      {% endfor %}
+      {% if pagina < paginas %}<a href="{{ link_pagina(pagina + 1) }}">Próxima</a>{% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="vazio">
+      <h2>Nada combina com tudo isso ao mesmo tempo</h2>
+      <p>Tente aumentar o tempo, marcar outra vibe, liberar mais categorias ou desligar o filtro das suas assinaturas.</p>
+    </div>
+    {% endif %}
+  {% endif %}
+</section>
+
+<script>
+  // Limita a escolha a 3 vibes: ao chegar no limite, as demais ficam desabilitadas
+  (function () {
+    const caixas = document.querySelectorAll('#vibes input');
+    function limitar() {
+      const marcadas = [...caixas].filter(c => c.checked).length;
+      caixas.forEach(c => { c.disabled = !c.checked && marcadas >= 3; });
+    }
+    caixas.forEach(c => c.addEventListener('change', limitar));
+    limitar();
+  })();
+</script>
+{% endblock %}
